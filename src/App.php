@@ -3,7 +3,7 @@
 namespace Joonika;
 
 
-class Joonika
+class App
 {
     public $domain;
     public $path;
@@ -20,8 +20,8 @@ class Joonika
     public function __construct()
     {
         $config_path = "../config.ini";
-        if(file_exists($config_path)){
-            $config=file_get_contents($config_path);
+        if (file_exists($config_path)) {
+            $config = file_get_contents($config_path);
             print_r($config);
         }
     }
