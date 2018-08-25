@@ -18,6 +18,9 @@
     "php": ">=5.3.0"
   },
   "autoload": {
+    "files": [
+      "src/Helpers.php"
+    ],
     "psr-4": {
       "Joonika\\": "src"
     }
