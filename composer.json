@@ -19,10 +19,8 @@
     "catfan/Medoo": ">=1.5.7"
   },
   "autoload": {
-    "files": [
-    ],
     "psr-4": {
-      "Joonika\\": "src"
+      "Joonika\\": "/src"
     }
   }
 }
