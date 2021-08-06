@@ -175,6 +175,7 @@ class app extends baseCommand
                     $newMigration->upAll();
                 }catch (\Exception $exception){
                     $this->writeInfo("\tmigration failed: debug->: php joonika app:migration:runAll" . "\n");
+                    $this->writeInfo("\t".$exception->getMessage().'- Line: '.$exception->getLine().'- File:'.$exception->getFile() . "\n");
                 }
             }
 
