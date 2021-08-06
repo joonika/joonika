@@ -82,7 +82,7 @@ class Migration
                                 foreach ($queries as $tb) {
                                     $qR += 1;
                                     $database->query($tb);
-                                    $databaseError = $database->error();
+                                    $databaseError = $database->error;
                                     if (!empty($databaseError[0]) && $databaseError[0] != '00000') {
                                         $type = 'danger';
                                         $output .= $tableFullName . " -> failed query " . $qR . ": ";
@@ -176,14 +176,10 @@ class Migration
                         }
                     } else {
                         $database->create($tables, $validatedParams);
-                        $databaseError = $database->error();
-                        if (!empty($databaseError[0]) && $databaseError[0] != '00000') {
+                        $databaseError = $database->error;
+                        if (!empty($databaseError)) {
                             $type = 'danger';
-                            if (!empty($databaseError[2])) {
-                                $output .= $databaseError[2];
-                            } else {
-                                $output .= "The conditions not following the rules";
-                            }
+                            $output .= $databaseError;
                         } else {
                             $output .= 'created successfully';
                             $database->query("ALTER TABLE " . $tables . " COMMENT = '" . $tableComment . "';");
@@ -291,14 +287,9 @@ order by index_schema,
                                 $output .= "\n";
                                 $qR += 1;
                                 $database->query($qi);
-                                $databaseError = $database->error();
-                                if (!empty($databaseError[0]) && $databaseError[0] != '00000') {
-                                    $output .= $tables . " -> failed index query " . $qR . ": ";
-                                    if (!empty($databaseError[2])) {
-                                        $output .= $databaseError[2];
-                                    } else {
-                                        $output .= "The conditions not following the rules";
-                                    }
+                                $databaseError = $database->error;
+                                if (!empty($databaseError) ) {
+                                    $output .= $tables . " -> failed index query " . $qR . ": ".$databaseError;
                                 } else {
                                     $output .= $tables . " -> success index query " . $qR . ": run";
                                 }

@@ -7,10 +7,12 @@ namespace Joonika\dev;
 use Joonika\FS;
 use Joonika\ManageTables;
 use Joonika\Traits\Repository;
+use Symfony\Component\Yaml\Yaml;
 
 class app extends baseCommand
 {
     use Repository;
+    public AppCommand $app;
 
     public static function commandsList()
     {
@@ -25,174 +27,155 @@ class app extends baseCommand
         ];
     }
 
+    public function __construct(AppCommand $app, $command = null, $connectToDataBase = false, $configFileIsRequired = false)
+    {
+        parent::__construct($app, $command, $connectToDataBase, $configFileIsRequired);
+        $this->app=$app;
+    }
+
     public function init()
     {
-        $defaultDirectories = [
-            'config' => ['websites'],
-            'modules',
-            'public',
-            'storage' => [
-                'views',
-                'files',
-                'langs',
-                'logs'
-            ],
-            'themes' => ['sample/Views'],
-        ];
+
+        $step = 1;
 
         if ($this->io->confirm("Are you ready? \t", true)) {
 
             $this->writeInfo("****   Installing new app   ****" . "\n");
 
+            $this->writeInfo(($step++) . "/5 - Create initial directories ...");
+            FS::mkDir(JK_SITE_PATH() . "config/websites", 0777, true);
+            FS::mkDir(JK_SITE_PATH() . "modules", 0777, true);
+            FS::mkDir(JK_SITE_PATH() . "public", 0777, true);
+            FS::mkDir(JK_SITE_PATH() . "storage/views", 0777, true);
+            FS::mkDir(JK_SITE_PATH() . "storage/files", 0777, true);
+            FS::mkDir(JK_SITE_PATH() . "storage/langs", 0777, true);
+            FS::mkDir(JK_SITE_PATH() . "storage/logs", 0777, true);
+            FS::mkDir(JK_SITE_PATH() . "themes/sample/Views", 0777, true);
+
+            $this->writeInfo(($step++) . "/5 - create config ...");
+
+            $configArray = [
+                "domain" => "localhost",
+                "protocol" => 'https://',
+                "defaultLang" => "en",
+                "debug" => true,
+                "language" => [
+                    "config" => "n",
+                    "name" => "english",
+                    "slug" => "en",
+                    "direction" => "ltr",
+                    "locale" => "en_us",
+                    "timezone" => "UTC",
+                ],
+                "database" => [
+                    "config" => "n",
+                    "host" => "localhost",
+                    "db" => "db",
+                    "user" => "root",
+                    "pass" => "password",
+                    "port" => 3306,
+                    "charset" => "utf8",
+                    "driver" => "mysql",
+                ],
+            ];
+            $config = [];
+            $this->ask('domain: (default: localhost)', $config['domain']);
+            $this->ask('protocol: (default: https://)', $config['protocol']);
+            $this->ask('defaultLang: ', $config['defaultLang']);
+            $this->ask('debug: [ n / y ]', $config['debug']);
+            $this->ask('secondary language ?: [ n(default) / y ]', $config['language']['config']);
+            if ($config['language']['config'] == 'y') {
+                $this->ask('language name: (english)', $config['language']['name']);
+                $this->ask('language slug: (en)', $config['language']['slug']);
+                $this->ask('language direction: (ltr,rtl)', $config['language']['direction']);
+                $this->ask('language locale: (en_us)', $config['language']['locale']);
+                $this->ask('language timezone: (UTC)', $config['language']['tz']);
+            }
+            $this->ask('database connectivity ?: [ n(default) / y ]', $config['database']['config']);
+            if ($config['database']['config'] == 'y') {
+                $this->ask('database server: (localhost)', $config['database']['host']);
+                $this->ask('database name: (db)', $config['database']['db']);
+                $this->ask('database user: (root)', $config['database']['user']);
+                $this->ask('database pass: (password)', $config['database']['pass']);
+                $this->ask('database port: (3306)', $config['database']['port']);
+                $this->ask('database charset: (utf8)', $config['database']['charset']);
+                $this->ask('database driver: (mysql)', $config['database']['driver']);
+            }
+            $configSet = [];
+            $configSet['id'] = 1;
+            $configSet['type'] = 'test';
+            $configSet['domain'] = !empty($config['domain']) ? $config['domain'] : $configArray['domain'];
+            $configSet['protocol'] = !empty($config['protocol']) ? $config['protocol'] : $configArray['protocol'];
+            $configSet['defaultLang'] = !empty($config['defaultLang']) ? $config['defaultLang'] : $configArray['defaultLang'];
+            $configSet['debug'] = !empty($config['debug']) ? $config['debug'] : $configArray['debug'];
+            $configSet['theme'] = 'sample';
+            if ($config['language']['config'] == 'y') {
+                $configSet['languages'] = [];
+                $t = [];
+                unset($config['language']['config']);
+                foreach ($config['language'] as $key => $val) {
+                    $t[$key] = !empty($val) ? $val : $configArray['language'][$key];
+                }
+                $configSet['languages'][$config['language']['slug']] = $t;
+            }
+            if (!isset($configSet['languages']['en'])) {
+                unset($configArray['language']['config']);
+                $configSet['languages']['en'] = $configArray['language'];
+            }
+            if ($config['database']['config'] == 'y') {
+                $t = [];
+                unset($config['database']['config']);
+                foreach ($config['database'] as $key => $val) {
+                    $t[$key] = !empty($val) ? $val : $configArray['database'][$key];
+                }
+                unset($configArray['database']['config']);
+                $configSet['database'] = $t;
+            } else {
+                unset($configArray['database']['config']);
+                $configSet['database'] = $configArray['database'];
+            }
+            $path = JK_SITE_PATH() . 'config/websites/dev.yaml';
+            $new_yaml = Yaml::dump($configSet, 5);
+            file_put_contents($path, $new_yaml);
+
+            $this->writeInfo(($step++) . "/5 - migration ...");
+
             $allowAnswer = false;
             $installJKTables = null;
             while (!$allowAnswer) {
-                $this->ask('install tables of joonika? [ no (default) / yes ]', $installJKTables, false);
+                $this->ask('migration up? [ n (default) / y ]', $installJKTables, false);
                 switch (strtolower(trim($installJKTables))) {
-                    case "yes":
-                        $allowAnswer = true;
-                        break;
-                    case "no";
-                        $allowAnswer = true;
-                        break;
-                    case "";
-                        $installJKTables = "no";
-                        $allowAnswer = true;
-                        break;
-                }
-            }
-
-            if ($installJKTables == "yes") {
-                $this->writeInfo("1- Installing Joonika tables: ..." . "\n");
-                $this->configFileIsRequired();
-                if (!is_null($this->configureFile)) {
-                    $installTable = false;
-                    if (!empty($this->configureFile['database'])) {
-//                        $installTable = ManageTables::createAllJkTables($this->configureFile['database']);
-                    } else {
-                        $this->writeError("\tdatabase configuration not found");
-                    }
-                }
-                if ($installTable) {
-                    $this->writeSuccess("\tresult : success" . "\n");
-                } else {
-                    $this->writeError("\tresult : failed" . "\n");
-                }
-            } else {
-                $this->writeInfo("1- Install Joonika tables canceled" . "\n");
-            }
-
-
-            $this->writeInfo("2- Installing Modules tables: ..." . "\n");
-
-            $installModulesTables = strtolower($this->checkInputArguments('installModuleTable'));
-
-            $allowAnswer = false;
-            $installModulesTables = null;
-            while (!$allowAnswer) {
-                $this->ask('install tables of modules? [ no (default) / yes ]', $installModulesTables, false);
-                switch (strtolower(trim($installModulesTables))) {
-                    case "yes":
-                        $allowAnswer = true;
-                        break;
-                    case "no";
+                    case "n":
+                    case "y":
                         $allowAnswer = true;
                         break;
                     case "";
-                        $installModulesTables = "no";
+                        $installJKTables = "n";
                         $allowAnswer = true;
                         break;
                 }
             }
 
-            if ($installModulesTables == "yes") {
+            if ($installJKTables == "y") {
+                $this->writeInfo("Installing Joonika tables: ..." . "\n");
                 $this->configFileIsRequired();
-                if (!is_null($this->configureFile)) {
-                    if (!empty($this->configureFile['database'])) {
-                        $databaseInfo = $this->configureFile['database'];
-                        if (checkArraySize(listModules())) {
-                            $i = 1;
-                            foreach (listModules() as $module) {
-                                $this->writeInfo("\t2-" . $i . "- installing tables of " . $module . " ..." . "\n");
-                                $createTable = ManageTables::moduleTablesExecute($module, $databaseInfo, 0);
-                                if ($createTable['status']) {
-                                    $this->writeSuccess("\t\tresult : success" . "\n");
-                                } else {
-                                    $this->writeError("\t\tresult : failed - " . $createTable['msg'] . "\n");
-                                }
-                                $i++;
-                            }
-                        } else {
-                            $this->writeError("\tresult : failed - not found any module" . "\n");
-                        }
-                    } else {
-                        $this->writeError("\tdatabase configuration not found");
-                    }
-                }
-            } else {
-                $this->writeError("\tYou did not want to install tables of modules." . "\n");
+                $newMigration = new \Joonika\dev\migration($this->app, 'migration:upAll');
+                $newMigration->upAll();
             }
 
-            $this->writeInfo("3- Create initial directories ...");
-            foreach ($defaultDirectories as $key => $val) {
-                if (!is_array($defaultDirectories[$key])) {
-                    $key = $val;
-                }
-                if (!FS::isExist(JK_SITE_PATH() . $key)) {
-                    FS::mkDir(JK_SITE_PATH() . $key, 0777, true);
-                }
-                if (isset($defaultDirectories[$key]) && checkArraySize($defaultDirectories[$key])) {
-                    foreach ($defaultDirectories[$key] as $subDir) {
-                        if (!FS::isExist(JK_SITE_PATH() . $key . "/" . $subDir)) {
-                            FS::mkDir(JK_SITE_PATH() . $key . "/" . $subDir, 0777, true);
-                        }
-                    }
-                }
-            }
             $this->writeSuccess("\tresult : success" . "\n");
 
-            FS::removeDirectories(JK_SITE_PATH() . "public", false);
 
             $this->writeSuccess("4- Create initial files ..." . "\n");
+
             FS::copy(__DIR__ . '/temp/index.php', 'public/index.php');
-            FS::copy(__DIR__ . '/temp/dev', 'dev');
+            FS::copy(__DIR__ . '/temp/joonika', 'joonika');
             FS::copy(__DIR__ . '/temp/indexApp.php', 'index.php');
-            if (!FS::isExistIsFile(JK_SITE_PATH() . "themes/sample/Views/index.php")) {
-                FS::filePutContent(JK_SITE_PATH() . "themes/sample/Views/index.php", "<?php echo 'test'; ");
-            }
+            FS::copy(__DIR__ . '/temp/indexTheme.php', 'themes/sample/Views/index.php');
+
             $this->writeSuccess("\tresult : success" . "\n");
 
-
-            $this->writeInfo("5- Copy modules assets to public folder ..." . "\n");
-            $i = 1;
-            foreach (listModules() as $module) {
-                $this->writeInfo("\t5-" . $i . "- Copy " . $module . " assets to public folder ..." . "\n");
-                FS::copyDirectories(JK_SITE_PATH() . "modules" . $module . '/assets', 'public/modules/' . $module . '/assets');
-                $this->writeSuccess("\t\tresult : success" . "\n");
-                $i++;
-            }
-
-            $this->writeInfo("6- Copy Joonika assets to public folder ..." . "\n");
-            FS::copyDirectories(JK_SITE_PATH() . 'vendor/joonika/joonika/src/assets', 'public/assets');
-            $this->writeSuccess("\tresult : success" . "\n");
-
-            $this->writeInfo("7- Copy themes assets to public folder ..." . "\n");
-
-            $themes = FS::getDirectories(JK_SITE_PATH() . 'themes');
-            $i = 1;
-            foreach ($themes as $theme) {
-                $this->writeInfo("\t8-" . $i . "- Copy " . $theme . " assets to public folder ..." . "\n");
-                \Joonika\FS::copyDirectories(JK_SITE_PATH() . 'themes/' . $theme . '/assets', 'public/themes/' . $theme . '/assets');
-                $this->writeSuccess("\t\tresult : success" . "\n");
-                $i++;
-            }
-
-
-            if (!FS::isExistIsFile(JK_SITE_PATH() . "config/websites/sample.yaml.sample")) {
-                $this->writeInfo("9- Create site config ...");
-                FS::copy(__DIR__ . '/temp/SiteConfigs.txt', 'config/websites/sample.yaml.sample');
-                $this->writeSuccess("\tresult : success" . "\n");
-            }
+            $this->update();
 
             $this->writeSuccess("\n===============================================");
             $this->writeSuccess("install process is finished");
@@ -202,7 +185,7 @@ class app extends baseCommand
         }
     }
 
-    public function public()
+    public function update()
     {
         $this->io->title("The public folder is updating ...");
         $publicFileExist = FS::isExist(JK_SITE_PATH() . "public");
@@ -220,10 +203,12 @@ class app extends baseCommand
         $i = 1;
         if (!empty($modules)) {
             foreach ($modules as $module) {
-                $this->writeInfo("\t1-" . $i . "- Copy " . $module . " assets to public folder ..." . "\n");
-                \Joonika\FS::copyDirectories(JK_SITE_PATH() . 'modules/' . $module . '/assets', 'public/modules/' . $module . '/assets');
-                $this->writeSuccess("\t\tresult : success" . "\n");
-                $i++;
+                if (FS::isExist(JK_SITE_PATH() . 'modules/' . $module . '/assets')) {
+                    $this->writeInfo("\t1-" . $i . "- Copy " . $module . " assets to public folder ..." . "\n");
+                    \Joonika\FS::copyDirectories(JK_SITE_PATH() . 'modules/' . $module . '/assets', 'public/modules/' . $module . '/assets');
+                    $this->writeSuccess("\t\tresult : success" . "\n");
+                    $i++;
+                }
             }
         }
 
@@ -232,10 +217,12 @@ class app extends baseCommand
         $i = 1;
         if (!empty($themes)) {
             foreach ($themes as $theme) {
-                $this->writeInfo("\t2-" . $i . "- Copy " . $theme . " assets to public folder ..." . "\n");
-                \Joonika\FS::copyDirectories(JK_SITE_PATH() . 'themes/' . $theme . '/assets', 'public/themes/' . $theme . '/assets');
-                $this->writeSuccess("\t\tresult : success" . "\n");
-                $i++;
+                if (FS::isExist(JK_SITE_PATH() . 'themes/' . $theme . '/assets')) {
+                    $this->writeInfo("\t2-" . $i . "- Copy " . $theme . " assets to public folder ..." . "\n");
+                    \Joonika\FS::copyDirectories(JK_SITE_PATH() . 'themes/' . $theme . '/assets', 'public/themes/' . $theme . '/assets');
+                    $this->writeSuccess("\t\tresult : success" . "\n");
+                    $i++;
+                }
             }
         }
 
@@ -250,7 +237,9 @@ class app extends baseCommand
                 $moduleName = explode('-', $moduleInVendor);
                 if (sizeof($moduleName) == 2) {
                     $moduleCheckName = $moduleName[1];
-                    \Joonika\FS::copyDirectories($moduleInVendor . '/src/assets', 'public/modules/' . $moduleCheckName . '/assets');
+                    if (FS::isExist($moduleInVendor . '/src/assets')) {
+                        \Joonika\FS::copyDirectories($moduleInVendor . '/src/assets', 'public/modules/' . $moduleCheckName . '/assets');
+                    }
                 }
             }
         }

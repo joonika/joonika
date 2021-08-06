@@ -1,5 +1,7 @@
 <?php
 namespace Joonika\lib\dumper;
+use mysql_xdevapi\Exception;
+
 /**
  * Abstract dump file: provides common interface for writing
  * data to dump files. 
@@ -29,7 +31,7 @@ abstract class Shuttle_Dump_File {
 		$this->fh = $this->open();
 
 		if (!$this->fh) {
-			throw new Shuttle_Exception("Couldn't create gz file");
+			throw new Exception("Couldn't create gz file");
 		}
 	}
 

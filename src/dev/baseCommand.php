@@ -83,7 +83,7 @@ abstract class baseCommand
         return $this->command->checkInputArguments($input);
     }
 
-    public function checkOptions($input)
+    public function checkOptions($input='')
     {
         return $this->command->checkOptions($input);
     }
