@@ -109,7 +109,7 @@ class app extends baseCommand
             $configSet['domain'] = !empty($config['domain']) ? $config['domain'] : $configArray['domain'];
             $configSet['protocol'] = !empty($config['protocol']) ? $config['protocol'] : $configArray['protocol'];
             $configSet['defaultLang'] = !empty($config['defaultLang']) ? $config['defaultLang'] : $configArray['defaultLang'];
-            $configSet['debug'] = !empty($config['debug']) ? $config['debug'] : $configArray['debug'];
+            $configSet['debug'] = $config['debug']=='y';
             $configSet['theme'] = 'sample';
             if ($config['language']['config'] == 'y') {
                 $configSet['languages'] = [];
