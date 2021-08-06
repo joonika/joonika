@@ -1,0 +1,12 @@
+#!/usr/bin/env php
+<?php
+
+use Joonika\dev\commandProvider;
+
+require __DIR__ . '/vendor/autoload.php';
+
+
+
+
+new commandProvider();
+

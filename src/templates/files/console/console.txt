@@ -1,0 +1,30 @@
+<?php
+
+namespace {namespace};
+
+use Joonika\dev\baseCommand;
+
+class {name} extends baseCommand
+{
+
+    public static function commandsList()
+    {
+        return [
+            "{name}:sample" => [
+                "title" => "sample method",
+                "arguments" => ['name','id','...'],
+                "options" => [
+                    'n' => [
+                        "desc" => "a description for n option"
+                    ]
+                ]
+            ],
+        ];
+    }
+
+    public function sample()
+    {
+        // TODO: Implement sample() method.
+    }
+
+}

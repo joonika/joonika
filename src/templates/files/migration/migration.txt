@@ -1,0 +1,29 @@
+<?php
+namespace Modules\{moduleName}\Database\Migration;
+
+use Joonika\Database;
+use Joonika\Migration\Migration;
+
+class {migrateName}Migration extends Migration
+{
+    public function init(){
+        return [
+            "table_name" => [
+                "columnA_name" => [
+                    "type" => "int", // int, bigint, varchar, ...
+                    "length" => 11, // length of data, default of int:11 , varchar:255
+                    "ai" => true, // true, false // default : false
+                    "nullable" => true, // true, false  // default : true
+                    "index" => "primary", // primary, unique, null  // default : null
+                ],
+                "columnB_name" => [
+                    "type" => "int", // int, bigint, varchar, ...
+                    "length" => 11, // length of data, default of int:11 , varchar:255
+                    "ai" => true, // true, false // default : false
+                    "nullable" => true, // true, false  // default : true
+                    "index" => "primary", // primary, unique, null  // default : null
+                ],
+            ]
+        ];
+    }
+}

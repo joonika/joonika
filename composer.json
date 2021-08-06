@@ -1,0 +1,73 @@
+{
+  "name": "joonika/joonika",
+  "type": "library",
+  "description": "light open source php framework",
+  "keywords": [
+    "joonika",
+    "joonika framework",
+    "framework",
+    "library",
+    "php",
+    "mvc framework",
+    "mvc"
+  ],
+  "homepage": "https://github.com/joonika/joonika",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Mohsen Jadidi",
+      "email": "mnjadidi@gmail.com"
+    }
+  ],
+  "scripts": {
+    "post-install": [
+      "php -r \"copy('src/dev/temp/dev', '../../../dev');\""
+    ],
+    "post-update": [
+      "php -r \"copy('src/dev/temp/dev', '../../../dev');\""
+    ]
+  },
+  "require": {
+    "php": ">=7",
+    "catfan/medoo": "^2.1.2",
+    "whichbrowser/parser": "2.1.1",
+    "ezyang/htmlpurifier": "*",
+    "fzaninotto/faker": "*",
+    "phpfastcache/phpfastcache": "^7.1",
+    "nesbot/carbon": "^2.42.0",
+    "ext-json": "*",
+    "symfony/console": "*",
+    "curl/curl": "*",
+    "symfony/http-foundation": "^5.1",
+    "composer/installers": "*",
+    "twig/twig": "*",
+    "ext-soap": "*",
+    "ext-gd": "*",
+    "ext-pdo": "*",
+    "ext-zip": "*",
+    "ext-curl": "*",
+    "phpseclib/phpseclib": "2.0",
+    "ext-yaml": "*",
+    "zircote/swagger-php": "dev-master",
+    "doctrine/annotations": "^1.11@dev",
+    "phpoffice/phpspreadsheet": "^1.6",
+    "hisune/echarts-php": "1.0.12"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Joonika\\": "src/",
+      "Modules\\": "../../../modules/",
+      "Themes\\": "../../../themes/",
+      "Config\\": "../../../config/"
+    },
+    "files": [
+      "src/Helpers.php"
+    ],
+    "classmap": [
+      "src/dev"
+    ]
+  }
+}

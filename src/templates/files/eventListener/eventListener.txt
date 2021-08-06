@@ -1,0 +1,20 @@
+<?php
+namespace {namespace};
+
+use Joonika\EventListener\EventListenerScaffold;
+
+class {name} extends EventListenerScaffold
+{
+    // $list property is required
+    public $list = [
+            'event class namespace' => [
+                'listener class namespace',
+                'listener class namespace',
+                'listener class namespace',
+                '.',
+                '.',
+                '.',
+                '.'
+            ],
+        ];
+}

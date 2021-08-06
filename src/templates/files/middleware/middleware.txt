@@ -1,0 +1,21 @@
+<?php
+namespace {namespace};
+
+use Joonika\Middlewares\Middleware;
+
+class {name} extends Middleware
+{
+   //function run must be define in middleware
+   public function run()
+       {
+            //example :  if user is author return true ,  else redirect to any page .
+            $role = "author";
+           if ($role == "author") {
+               return true;
+           } else {
+               echo "You aren't author !";
+               die();
+           }
+       }
+
+}

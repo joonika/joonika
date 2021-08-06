@@ -1,0 +1,8 @@
+<?php
+namespace {namespace};
+
+use Joonika\EventListener\Events;
+
+class {name} extends Events
+{
+}

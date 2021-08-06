@@ -1,0 +1,22 @@
+<?php
+declare(strict_types=1);
+
+namespace {namespace};
+
+use PHPUnit\Framework\TestCase;
+
+final class {name} extends TestCase
+{
+
+        /**
+        * @test
+        */
+        public function yourFirstTest()
+        {
+            $this->assertTrue(true);
+        }
+
+}
+
+
+

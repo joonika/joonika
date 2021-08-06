@@ -1,0 +1,13 @@
+<?php
+namespace {namespace};
+
+use Joonika\EventListener\Listener;
+
+class {name} extends Listener
+{
+    // boot method is required
+     public function boot()
+        {
+          // TODO: Implement boot() method.
+        }
+}

@@ -1,0 +1,18 @@
+<?php
+
+namespace {namespace};
+
+
+use Joonika\Controller;
+
+class {name} extends Controller
+{
+
+    //you must type your method name instead of sample
+
+    public function get_sample()
+    {
+
+    }
+
+}

@@ -1,0 +1,58 @@
+<?php
+
+namespace {namespace};
+
+
+class Configs
+{
+    public static $version = '0.0.1';
+
+    public static $authors = [
+            'sample 1',
+            'sample 2'
+    ];
+
+    public static function description()
+    {
+        return __("sample description");
+    }
+
+    public static function versionHistory()
+    {
+        return [
+            '0,0,1' => [
+                __('sample text'),
+                __("sample text")
+            ],
+            '0,0,2' => [
+                __("sample text"),
+                __("sample text"),
+            ]
+        ];
+    }
+
+
+    public static function menus()
+    {
+        return [
+            "title" => __("menu"),
+            "link" => "#",
+            "name" => "sample",
+            "icon" => "fontawesome icons",
+            "sub" => [
+                [
+                    "title" => __("sub menu 1"),
+                    "link" => "file address",
+                    "name" => "sub menu 1",
+                    "icon" => "fontawesome icons",
+                ],
+                [
+                    "title" => __("sub menu 2"),
+                    "link" => "file address",
+                    "name" => "sub menu 2",
+                    "icon" => "fontawesome icons",
+                ],
+            ],
+        ];
+    }
+}

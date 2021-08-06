@@ -1,0 +1,33 @@
+<?php
+
+namespace {namespace};
+
+
+use Joonika\Controller;
+
+class {name} extends Controller
+{
+
+  //you must type your method name instead of ...
+
+    function get_...()
+        {
+
+        }
+
+    function post_...()
+        {
+
+        }
+
+    function delete_...()
+        {
+
+        }
+
+    function put_...()
+        {
+
+        }
+
+}

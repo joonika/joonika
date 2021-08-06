@@ -1,0 +1,29 @@
+id: 1
+type: test
+domain: domain.com
+protocol: http://
+defaultLang: en
+debug: true
+theme: sample
+languages:
+  fa:
+    name: persian
+    slug: fa
+    direction: rtl
+    locale: fa_ir
+  en:
+    name: english
+    slug: en
+    direction: ltr
+    locale: en_us
+database:
+  host: localhost
+  db: joonikaDB
+  user: root
+  pass: 'password'
+  port: 3306
+  charset: utf8
+  driver: mysql
+  other:
+    logs:
+      logs
