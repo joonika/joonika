@@ -12,6 +12,7 @@ use Symfony\Component\Yaml\Yaml;
 class app extends baseCommand
 {
     use Repository;
+
     public AppCommand $app;
 
     public static function commandsList()
@@ -30,7 +31,7 @@ class app extends baseCommand
     public function __construct(AppCommand $app, $command = null, $connectToDataBase = false, $configFileIsRequired = false)
     {
         parent::__construct($app, $command, $connectToDataBase, $configFileIsRequired);
-        $this->app=$app;
+        $this->app = $app;
     }
 
     public function init()
@@ -159,8 +160,16 @@ class app extends baseCommand
             if ($installJKTables == "y") {
                 $this->writeInfo("Installing Joonika tables: ..." . "\n");
                 $this->configFileIsRequired();
-                $newMigration = new \Joonika\dev\migration($this->app, 'migration:upAll');
-                $newMigration->upAll();
+                $requiredYamlFile = JK_SITE_PATH() . 'config/websites/dev.yaml';
+                if (file_exists($requiredYamlFile)) {
+                    $this->configureFile = yaml_parse_file($requiredYamlFile);
+                }
+                try {
+                    $newMigration = new \Joonika\dev\migration($this->app, 'migration:upAll');
+                    $newMigration->upAll();
+                }catch (\Exception $exception){
+                    $this->writeInfo("\tmigration failed: debug->: php joonika app:migration:runAll" . "\n");
+                }
             }
 
             $this->writeSuccess("\tresult : success" . "\n");
