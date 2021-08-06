@@ -13,7 +13,7 @@ class migration extends baseCommand
 
     public function __construct(AppCommand $app, $command = null, $connectToDataBase = false)
     {
-        parent::__construct($app, $command, true);
+        parent::__construct($app, $command, true,$connectToDataBase);
     }
 
     public static function commandsList()

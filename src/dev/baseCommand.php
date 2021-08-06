@@ -30,7 +30,6 @@ abstract class baseCommand
         if ($configFileIsRequired) {
             $this->configFileIsRequired();
         }
-
         if (!is_null($this->configureFile)) {
             if (!empty($this->configureFile['type'])) {
                 if (!empty($this->configureFile['database'])) {

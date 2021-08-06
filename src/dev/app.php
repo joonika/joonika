@@ -6,6 +6,7 @@ namespace Joonika\dev;
 
 use Joonika\FS;
 use Joonika\ManageTables;
+use Joonika\Route;
 use Joonika\Traits\Repository;
 use Symfony\Component\Yaml\Yaml;
 
@@ -139,8 +140,8 @@ class app extends baseCommand
             $new_yaml = Yaml::dump($configSet, 5);
             file_put_contents($path, $new_yaml);
 
-            if($configSet['domain']!='dev'){
-                $path = JK_SITE_PATH() . 'config/websites/'.$configSet['domain'].'.yaml';
+            if ($configSet['domain'] != 'dev') {
+                $path = JK_SITE_PATH() . 'config/websites/' . $configSet['domain'] . '.yaml';
                 unset($configSet['domain']);
                 $new_yaml = Yaml::dump($configSet, 5);
                 file_put_contents($path, $new_yaml);
@@ -171,11 +172,11 @@ class app extends baseCommand
                     $this->configureFile = yaml_parse_file($requiredYamlFile);
                 }
                 try {
-                    $newMigration = new \Joonika\dev\migration($this->app, 'migration:upAll',true);
-                    $newMigration->upAll();
-                }catch (\Exception $exception){
-                    $this->writeInfo("\tmigration failed: debug->: php joonika app:migration:runAll" . "\n");
-                    $this->writeInfo("\t".$exception->getMessage().'- Line: '.$exception->getLine().'- File:'.$exception->getFile() . "\n");
+                    Route::$instance = new Route(JK_SITE_PATH(), 'dev');
+                    $migrationClass = new \Joonika\Migration\joonika('up', ['options' => ["force" => false]], 'joonika');
+                } catch (\Exception $exception) {
+                    $this->writeInfo("\tmigration failed: debug->: php joonika migration:runAll" . "\n");
+                    $this->writeInfo("\t" . $exception->getMessage() . '- Line: ' . $exception->getLine() . '- File:' . $exception->getFile() . "\n");
                 }
             }
 
