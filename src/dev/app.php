@@ -140,10 +140,10 @@ class app extends baseCommand
             file_put_contents($path, $new_yaml);
 
             if($configSet['domain']!='dev'){
+                $path = JK_SITE_PATH() . 'config/websites/'.$configSet['domain'].'.yaml';
                 unset($configSet['domain']);
                 $new_yaml = Yaml::dump($configSet, 5);
                 file_put_contents($path, $new_yaml);
-
             }
 
             $this->writeInfo(($step++) . "/5 - migration ...");
@@ -166,13 +166,12 @@ class app extends baseCommand
 
             if ($installJKTables == "y") {
                 $this->writeInfo("Installing Joonika tables: ..." . "\n");
-                $this->configFileIsRequired();
                 $requiredYamlFile = JK_SITE_PATH() . 'config/websites/dev.yaml';
                 if (file_exists($requiredYamlFile)) {
                     $this->configureFile = yaml_parse_file($requiredYamlFile);
                 }
                 try {
-                    $newMigration = new \Joonika\dev\migration($this->app, 'migration:upAll');
+                    $newMigration = new \Joonika\dev\migration($this->app, 'migration:upAll',true);
                     $newMigration->upAll();
                 }catch (\Exception $exception){
                     $this->writeInfo("\tmigration failed: debug->: php joonika app:migration:runAll" . "\n");
