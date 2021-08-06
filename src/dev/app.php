@@ -56,7 +56,7 @@ class app extends baseCommand
             $this->writeInfo(($step++) . "/5 - create config ...");
 
             $configArray = [
-                "domain" => "localhost",
+                "domain" => "dev",
                 "protocol" => 'https://',
                 "defaultLang" => "en",
                 "debug" => true,
@@ -80,7 +80,7 @@ class app extends baseCommand
                 ],
             ];
             $config = [];
-            $this->ask('domain: (default: localhost)', $config['domain']);
+            $this->ask('domain: (default: dev)', $config['domain']);
             $this->ask('protocol: (default: https://)', $config['protocol']);
             $this->ask('defaultLang: ', $config['defaultLang']);
             $this->ask('debug: [ n / y ]', $config['debug']);
@@ -138,6 +138,13 @@ class app extends baseCommand
             $path = JK_SITE_PATH() . 'config/websites/dev.yaml';
             $new_yaml = Yaml::dump($configSet, 5);
             file_put_contents($path, $new_yaml);
+
+            if($configSet['domain']!='dev'){
+                unset($configSet['domain']);
+                $new_yaml = Yaml::dump($configSet, 5);
+                file_put_contents($path, $new_yaml);
+
+            }
 
             $this->writeInfo(($step++) . "/5 - migration ...");
 
