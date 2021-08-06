@@ -1,6 +1,6 @@
 {
   "name": "joonika/joonika",
-  "type": "library",
+  "type": "framework",
   "description": "light open source php framework",
   "keywords": [
     "joonika",
