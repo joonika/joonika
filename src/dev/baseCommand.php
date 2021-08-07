@@ -30,7 +30,6 @@ abstract class baseCommand
         if ($configFileIsRequired) {
             $this->configFileIsRequired();
         }
-
         if (!is_null($this->configureFile)) {
             if (!empty($this->configureFile['type'])) {
                 if (!empty($this->configureFile['database'])) {
@@ -83,7 +82,7 @@ abstract class baseCommand
         return $this->command->checkInputArguments($input);
     }
 
-    public function checkOptions($input)
+    public function checkOptions($input='')
     {
         return $this->command->checkOptions($input);
     }

@@ -195,7 +195,7 @@ class AppCommand extends Command
 
     public function checkOptions($name)
     {
-        return $this->input->getOptions()[$name] ? $this->input->getOptions()[$name] : false;
+        return isset($this->input->getOptions()[$name]) ? $this->input->getOptions()[$name] : false;
     }
 
 }

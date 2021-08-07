@@ -19,14 +19,6 @@
       "email": "mnjadidi@gmail.com"
     }
   ],
-  "scripts": {
-    "post-install": [
-      "php -r \"copy('src/dev/temp/dev', '../../../dev');\""
-    ],
-    "post-update": [
-      "php -r \"copy('src/dev/temp/dev', '../../../dev');\""
-    ]
-  },
   "require": {
     "php": ">=7",
     "catfan/medoo": "^2.1.2",

@@ -147,6 +147,7 @@ class Errors
         }
         return $text;
     }
+
     public static function setValidCode($code){
         $txt=self::statusCodeMessage($code);
         if($txt=='unknown http status code: ' . $code){

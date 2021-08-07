@@ -435,7 +435,9 @@ class Route
         $this->query_string = isset($_SERVER['REQUEST_URI']) ? $this->getQueryString(ltrim($_SERVER['REQUEST_URI'], '/')) : null;
         self::$JK_WEBSITE_ID = !empty(self::$JK_WEBSITE['id']) ? self::$JK_WEBSITE['id'] : null;
         self::$JK_HOST = !empty(self::$JK_WEBSITE['domain']) ? self::$JK_WEBSITE['domain'] : null;
-        define("JK_SERVER_TYPE", self::$JK_WEBSITE['type']);
+        if(!defined("JK_SERVER_TYPE")){
+            define("JK_SERVER_TYPE", self::$JK_WEBSITE['type']);
+        }
 
         $path = array_values(array_filter(explode('/', self::JK_URI())));
         if (!$silentType) {

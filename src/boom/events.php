@@ -156,7 +156,7 @@ class events
                                     "result" => false,
                                     "inputs" => $inputs,
                                     "registerTime" => now(),
-                                    "return" => $this->return,
+                                    "outputReturn" => $this->return,
                                 ];
                                 if ($this->after > 1) {
                                     $inputsConditions['executeAt'] = date('Y/m/d H:i:s', time() + $this->after);

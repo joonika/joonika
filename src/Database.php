@@ -207,7 +207,7 @@ class Database
 
     public static function error($db = null)
     {
-        return self::getInstance($db)->error();
+        return self::getInstance($db)->error;
     }
 
     public static function drop($table, $db = null)
