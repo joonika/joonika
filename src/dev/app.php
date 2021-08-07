@@ -82,14 +82,13 @@ class app extends baseCommand
             ];
             $config = [];
             $this->ask('domain: (default: dev)', $config['domain']);
-            $this->ask('protocol: (default: https://)', $config['protocol']);
-            $this->ask('defaultLang: ', $config['defaultLang']);
-            $this->ask('debug: [ n / y ]', $config['debug']);
+            $this->ask('protocol(secure): [ n(default) / y ] (http:// or https://)', $config['protocol']);
+            $this->ask('debug: [ n / y (default) ]', $config['debug']);
             $this->ask('secondary language ?: [ n(default) / y ]', $config['language']['config']);
             if ($config['language']['config'] == 'y') {
                 $this->ask('language name: (english)', $config['language']['name']);
                 $this->ask('language slug: (en)', $config['language']['slug']);
-                $this->ask('language direction: (ltr,rtl)', $config['language']['direction']);
+                $this->ask('language direction: (ltr(default),rtl)', $config['language']['direction']);
                 $this->ask('language locale: (en_us)', $config['language']['locale']);
                 $this->ask('language timezone: (UTC)', $config['language']['tz']);
             }
@@ -107,9 +106,8 @@ class app extends baseCommand
             $configSet['id'] = 1;
             $configSet['type'] = 'test';
             $configSet['domain'] = !empty($config['domain']) ? $config['domain'] : $configArray['domain'];
-            $configSet['protocol'] = !empty($config['protocol']) ? $config['protocol'] : $configArray['protocol'];
-            $configSet['defaultLang'] = !empty($config['defaultLang']) ? $config['defaultLang'] : $configArray['defaultLang'];
-            $configSet['debug'] = $config['debug']=='y';
+            $configSet['protocol'] = $config['protocol']=='y' ? "https://" : "http://";
+            $configSet['debug'] = !($config['debug'] == 'n');
             $configSet['theme'] = 'sample';
             if ($config['language']['config'] == 'y') {
                 $configSet['languages'] = [];
@@ -119,6 +117,16 @@ class app extends baseCommand
                     $t[$key] = !empty($val) ? $val : $configArray['language'][$key];
                 }
                 $configSet['languages'][$config['language']['slug']] = $t;
+
+                $this->ask('use language ('.$config['language']['slug'].') as default language [ n / y(default) ] : ', $selectDefaultLang);
+                if($selectDefaultLang=='y'){
+                    $configSet['defaultLang']=$config['language']['slug'];
+                }else{
+                    $configSet['defaultLang'] = "en";
+                }
+
+            }else{
+                $configSet['defaultLang'] = "en";
             }
             if (!isset($configSet['languages']['en'])) {
                 unset($configArray['language']['config']);
@@ -133,8 +141,7 @@ class app extends baseCommand
                 unset($configArray['database']['config']);
                 $configSet['database'] = $t;
             } else {
-                unset($configArray['database']['config']);
-                $configSet['database'] = $configArray['database'];
+                unset($configArray['database']);
             }
             $path = JK_SITE_PATH() . 'config/websites/dev.yaml';
             $new_yaml = Yaml::dump($configSet, 5);
@@ -146,44 +153,43 @@ class app extends baseCommand
                 $new_yaml = Yaml::dump($configSet, 5);
                 file_put_contents($path, $new_yaml);
             }
+            if (!empty($configArray['database'])) {
+                $this->writeInfo(($step++) . "/5 - migration ...");
+                $allowAnswer = false;
+                $installJKTables = null;
+                while (!$allowAnswer) {
+                    $this->ask('migration up? [ n (default) / y ]', $installJKTables, false);
+                    switch (strtolower(trim($installJKTables))) {
+                        case "n":
+                        case "y":
+                            $allowAnswer = true;
+                            break;
+                        case "";
+                            $installJKTables = "n";
+                            $allowAnswer = true;
+                            break;
+                    }
+                }
 
-            $this->writeInfo(($step++) . "/5 - migration ...");
-
-            $allowAnswer = false;
-            $installJKTables = null;
-            while (!$allowAnswer) {
-                $this->ask('migration up? [ n (default) / y ]', $installJKTables, false);
-                switch (strtolower(trim($installJKTables))) {
-                    case "n":
-                    case "y":
-                        $allowAnswer = true;
-                        break;
-                    case "";
-                        $installJKTables = "n";
-                        $allowAnswer = true;
-                        break;
+                if ($installJKTables == "y") {
+                    $this->writeInfo("Installing Joonika tables: ..." . "\n");
+                    $requiredYamlFile = JK_SITE_PATH() . 'config/websites/dev.yaml';
+                    if (file_exists($requiredYamlFile)) {
+                        $this->configureFile = yaml_parse_file($requiredYamlFile);
+                    }
+                    try {
+                        Route::$instance = new Route(JK_SITE_PATH(), 'dev');
+                        $migrationClass = new \Joonika\Migration\joonika('up', ['options' => ["force" => false]], 'joonika');
+                    } catch (\Exception $exception) {
+                        $this->writeInfo("\tmigration failed: debug->: php joonika migration:runAll" . "\n");
+                        $this->writeInfo("\t" . $exception->getMessage() . '- Line: ' . $exception->getLine() . '- File:' . $exception->getFile() . "\n");
+                    }
                 }
             }
-
-            if ($installJKTables == "y") {
-                $this->writeInfo("Installing Joonika tables: ..." . "\n");
-                $requiredYamlFile = JK_SITE_PATH() . 'config/websites/dev.yaml';
-                if (file_exists($requiredYamlFile)) {
-                    $this->configureFile = yaml_parse_file($requiredYamlFile);
-                }
-                try {
-                    Route::$instance = new Route(JK_SITE_PATH(), 'dev');
-                    $migrationClass = new \Joonika\Migration\joonika('up', ['options' => ["force" => false]], 'joonika');
-                } catch (\Exception $exception) {
-                    $this->writeInfo("\tmigration failed: debug->: php joonika migration:runAll" . "\n");
-                    $this->writeInfo("\t" . $exception->getMessage() . '- Line: ' . $exception->getLine() . '- File:' . $exception->getFile() . "\n");
-                }
-            }
-
             $this->writeSuccess("\tresult : success" . "\n");
 
 
-            $this->writeSuccess("4- Create initial files ..." . "\n");
+            $this->writeSuccess(($step++)."- Create initial files ..." . "\n");
 
             FS::copy(__DIR__ . '/temp/index.php', 'public/index.php');
             FS::copy(__DIR__ . '/temp/joonika', 'joonika');
