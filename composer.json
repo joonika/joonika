@@ -40,8 +40,8 @@
     "ext-curl": "*",
     "phpseclib/phpseclib": "2.0",
     "ext-yaml": "*",
-    "zircote/swagger-php": "dev-master",
-    "doctrine/annotations": "^1.11@dev",
+    "zircote/swagger-php": "*",
+    "doctrine/annotations": "^1.11",
     "phpoffice/phpspreadsheet": "^1.6",
     "hisune/echarts-php": "1.0.12"
   },
