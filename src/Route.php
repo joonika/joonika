@@ -355,7 +355,7 @@ class Route
 
     public function __construct($sitePath, $silentType = false)
     {
-        self::$instance=$this;
+        self::$instance = $this;
         $languageSchema = self::routerConfigLanguageSchema();
         $otherSchema = self::routerConfigOtherDbSchema();
         $routeConfig = self::routerConfigStructure($sitePath);
@@ -363,7 +363,6 @@ class Route
         set_error_handler('Joonika\Errors::errorHandler');
         set_exception_handler('Joonika\Errors::exceptionHandler');
         self::$JK_SITE_PATH = $routeConfig['sitePath'];
-
         $routeConfig['domain'] = $_SERVER['HTTP_HOST'] ?? $routeConfig['domain'];
         $requiredYamlFile = self::JK_SITE_PATH() . 'config/websites/dev.yaml';
         if ($routeConfig['domain'] == 'dev') {
@@ -411,6 +410,8 @@ class Route
                         if (isset($yamlParseFile['database']['other'])) {
                             $routeConfig['database']['other'] = $yamlParseFile['database']['other'];
                         }
+                    }else{
+                      unset($routeConfig['database']);
                     }
                 }
             } catch (\Exception $exception) {
@@ -435,7 +436,7 @@ class Route
         $this->query_string = isset($_SERVER['REQUEST_URI']) ? $this->getQueryString(ltrim($_SERVER['REQUEST_URI'], '/')) : null;
         self::$JK_WEBSITE_ID = !empty(self::$JK_WEBSITE['id']) ? self::$JK_WEBSITE['id'] : null;
         self::$JK_HOST = !empty(self::$JK_WEBSITE['domain']) ? self::$JK_WEBSITE['domain'] : null;
-        if(!defined("JK_SERVER_TYPE")){
+        if (!defined("JK_SERVER_TYPE")) {
             define("JK_SERVER_TYPE", self::$JK_WEBSITE['type']);
         }
 
@@ -462,29 +463,32 @@ class Route
         if (!empty($getLang['tz'])) {
             @date_default_timezone_set($getLang['tz']);
         }
+
         if (!$silentType) {
             //remove '/' from end of uri
-            $q=$this->query_string;
-            $qAddAfter=!empty($q)?('?'.$q):'';
+            $q = $this->query_string;
+            $qAddAfter = !empty($q) ? ('?' . $q) : '';
             if (substr(self::$JK_URI, -1) == '/') {
-                $urlGo=rtrim(self::JK_DOMAIN() . self::JK_URI(), "/");
+                $urlGo = rtrim(self::JK_DOMAIN() . self::JK_URI(), "/");
                 header("HTTP/1.1 301 Moved Permanently");
-                redirect_to($urlGo.$qAddAfter);
+                redirect_to($urlGo . $qAddAfter);
             }
             //redirect to url without http or https
             if (!$this->isHttps() && $this->protocol == "https://") {
-                $urlGo="https://" . ltrim(self::JK_URL(), $this->protocol);
+                $urlGo = "https://" . ltrim(self::JK_URL(), $this->protocol);
                 header("HTTP/1.1 301 Moved Permanently");
-                redirect_to($urlGo.$qAddAfter);
+                redirect_to($urlGo . $qAddAfter);
             }
         }
 
         try {
-            $dataBaseInfo = $routeConfig['database'];
-            if ($silentType) {
-                $this->database = $dataBaseInfo;
-            } else {
-                $this->database = Database::connect($dataBaseInfo);
+            if (!empty($routeConfig['database'])) {
+                $dataBaseInfo = $routeConfig['database'];
+                if ($silentType) {
+                    $this->database = $dataBaseInfo;
+                } else {
+                    $this->database = Database::connect($dataBaseInfo);
+                }
             }
         } catch (\Exception $exception) {
             echo "!!! please check your connection , connection to database failed !!!";
@@ -520,7 +524,7 @@ class Route
                 $moduleName = explode('-', $moduleInVendor);
                 if (sizeof($moduleName) == 2) {
                     $moduleCheckName = $moduleName[1];
-                    $this->modulesInVendor[]=$moduleCheckName;
+                    $this->modulesInVendor[] = $moduleCheckName;
                     if (!in_array($moduleCheckName, $foundedModules)) {
                         array_push($foundedModules, $moduleCheckName);
                         $autoload['Modules\\' . $moduleCheckName . '\\'][] = 'src/';
@@ -825,13 +829,13 @@ class Route
                 $this->controllerClass = "\\Modules\\" . $this->findModule . "\Controllers\\" . $find;
             }
             if (class_exists($this->controllerClass)) {
-                $t=$this->path;
+                $t = $this->path;
                 unset($t[0]);
-                $pathExpls=implode('\\',$t);
-                $findMethod=substr($pathExpls,strlen($find)+1);
+                $pathExpls = implode('\\', $t);
+                $findMethod = substr($pathExpls, strlen($find) + 1);
                 $pos = strpos($findMethod, '\\');
-                if(!empty($pos)){
-                    $findMethod=substr($findMethod,0,$pos);
+                if (!empty($pos)) {
+                    $findMethod = substr($findMethod, 0, $pos);
                 }
                 $this->findMethod = $findMethod;
                 $this->sc = true;
@@ -842,8 +846,8 @@ class Route
                 $this->tempPath = array_values($this->tempPath);
                 $this->checkSubControllers($theme);
             }
-        }elseif(sizeof($this->path)>=2){
-            $find=$this->path[0];
+        } elseif (sizeof($this->path) >= 2) {
+            $find = $this->path[0];
             if ($theme) {
                 $this->controllerClass = "Themes\\" . $theme . "\Controllers\\" . $find;
             } else {
