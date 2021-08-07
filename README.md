@@ -1,35 +1,8 @@
 ## Joonika Lite PHP Framework
 
 ### Install
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-composer required joonika/joonika
-```
-
-OR Using By json config
-
-```json
-{
-  "name": "projectName",
-  "description": "joonika",
-  "type": "project",
-  "license": "MIT",
-  "minimum-stability": "dev",
-  "config": {
-    "platform-check": false
-  },
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://gitfa.com/Joonika/joonika.git"
-    }
-  ],
-  "require": {
-    "joonika/joonika": "dev-Beta"
-  }
-}
+```shell
+curl -s https://get.joonika.com | bash && sh installer
 ```
 
 ## Controller Available Methods
