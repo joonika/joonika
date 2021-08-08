@@ -5,6 +5,14 @@
 curl -s https://get.joonika.com | bash && sh installer
 ```
 
+### During install Notes
+if your domain has hosted on another port than 80,443
+for domain answer please fill domain.com:9090
+<br>
+if you want to create file for that domain:port: just replace colon with underline(_)
+<br>
+domain.com_9090.yaml
+
 ### joonika toolkit
 #### Top instruction
 ```shell

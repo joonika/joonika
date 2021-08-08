@@ -353,6 +353,9 @@ class Route
         return $otherSchema;
     }
 
+    /**
+     * @throws \ErrorException
+     */
     public function __construct($sitePath, $silentType = false)
     {
         self::$instance = $this;
@@ -370,9 +373,9 @@ class Route
             $silentType = true;
         } else {
             $portCheck = in_array($_SERVER['SERVER_PORT'], [80, 443]) ? '' : ('_' . $_SERVER['SERVER_PORT']);
-            $requiredYamlFile = self::JK_SITE_PATH() . 'config/websites/' . $_SERVER['HTTP_HOST'] . $portCheck . '.yaml';
+            $domainGet=substr($_SERVER['HTTP_HOST'],0,strpos($_SERVER['HTTP_HOST'],':'));
+            $requiredYamlFile = self::JK_SITE_PATH() . 'config/websites/' . $domainGet . $portCheck . '.yaml';
         }
-
         if (file_exists($requiredYamlFile)) {
             try {
                 $yamlParseFile = yaml_parse_file($requiredYamlFile);
@@ -417,6 +420,8 @@ class Route
             } catch (\Exception $exception) {
                 throw new \Exception("invalid yaml file");
             }
+        }elseif(!$silentType){
+            Errors::errorHandler(0, "config file has not correctly configs.", __FILE__, __LINE__);
         }
 
         self::$JK_WEBSITE = $routeConfig;

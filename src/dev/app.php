@@ -148,7 +148,7 @@ class app extends baseCommand
             file_put_contents($path, $new_yaml);
 
             if ($configSet['domain'] != 'dev') {
-                $path = JK_SITE_PATH() . 'config/websites/' . $configSet['domain'] . '.yaml';
+                $path = JK_SITE_PATH() . 'config/websites/' . str_replace(':','_',$configSet['domain']) . '.yaml';
                 unset($configSet['domain']);
                 $new_yaml = Yaml::dump($configSet, 5);
                 file_put_contents($path, $new_yaml);
