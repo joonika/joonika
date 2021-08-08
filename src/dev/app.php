@@ -23,8 +23,8 @@ class app extends baseCommand
                 "title" => "install joonika",
                 "arguments" => ['installModuleTable'],
             ],
-            "app:public" => [
-                "title" => "update public",
+            "app:update" => [
+                "title" => "publish public",
             ],
         ];
     }
@@ -195,6 +195,7 @@ class app extends baseCommand
             FS::copy(__DIR__ . '/temp/joonika', 'joonika');
             FS::copy(__DIR__ . '/temp/indexApp.php', 'index.php');
             FS::copy(__DIR__ . '/temp/indexTheme.php', 'themes/sample/Views/index.php');
+            FS::copy(__DIR__ . '/temp/gitignoreSample', '.gitignore');
 
             $this->writeSuccess("\tresult : success" . "\n");
 
