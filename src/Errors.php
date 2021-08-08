@@ -282,8 +282,11 @@ class Errors
         } else {
             $title = __("error occurred");
             $message = '';
+            if(!empty($exception->getMessage())){
+                $message=$exception->getMessage();
+            }
             if (!in_array($code, [403, 404])) {
-                $message = '<div style="text-align: left">';
+                $message .= '<div style="text-align: left">';
                 $message .= "<p>" . __("error class name") . " : '" . get_class($exception) . "'</p>\n";
                 $message .= "<p>" . __("error message") . " : '" . $exception->getMessage() . "'</p>\n";
                 $message .= "<p>" . __("error in") . " : '" . $exception->getFile() . "'</p>\n";
@@ -302,7 +305,12 @@ class Errors
                 $log = JK_SITE_PATH() . 'storage/logs/' . date('Y-m-d') . '.txt';
                 ini_set('error_log', $log);
                 error_log($message);
+
+
                 $msg = '';
+                if(!empty($exception->getMessage())){
+                    $msg=$exception->getMessage();
+                }
                 $errorCode='';
                 if (!empty($data['errorID'])) {
                     $msg = sprintf(__("error occured, your problem registered with tracking number is %s"), $errorDbId);

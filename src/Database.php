@@ -12,6 +12,7 @@ class Database
     public $database;
     protected $is_connected;
     private static $instance = [];
+    public static $instanceDuration = [];
     private static $dbNameSelected = "";
 
     public static function getDbConfig()
@@ -86,6 +87,7 @@ class Database
                 ]
             ]);
             self::$instance[$info['db']] = $database;
+            self::$instanceDuration[$info['db']]=[];
         } catch (\PDOException $exception) {
             self::$instance[$info['db']] = false;
             throw new \PDOException($exception);

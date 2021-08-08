@@ -789,7 +789,10 @@ if (empty($isAjax)) {
     <div class="center" style=" direction: <?= $direction ?>;">
         <div>
             <?php
-            $codeView = $code . '-' . $extraCode;
+            $codeView = $code;
+            if(!empty($extraCode)){
+                $codeView = $codeView . '-' . $extraCode;
+            }
             ?>
             <div class="title"><?= $title ?> (<?= sprintf(__("error code: %s"), $codeView) ?>)</div>
             <div class="description">
