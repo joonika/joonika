@@ -106,7 +106,7 @@ class app extends baseCommand
             $configSet['id'] = 1;
             $configSet['type'] = 'test';
             $configSet['domain'] = !empty($config['domain']) ? $config['domain'] : $configArray['domain'];
-            $configSet['protocol'] = $config['protocol']=='y' ? "https://" : "http://";
+            $configSet['protocol'] = $config['protocol'] == 'y' ? "https://" : "http://";
             $configSet['debug'] = !($config['debug'] == 'n');
             $configSet['theme'] = 'sample';
             if ($config['language']['config'] == 'y') {
@@ -118,14 +118,14 @@ class app extends baseCommand
                 }
                 $configSet['languages'][$config['language']['slug']] = $t;
 
-                $this->ask('use language ('.$config['language']['slug'].') as default language [ n / y(default) ] : ', $selectDefaultLang);
-                if($selectDefaultLang=='y'){
-                    $configSet['defaultLang']=$config['language']['slug'];
-                }else{
+                $this->ask('use language (' . $config['language']['slug'] . ') as default language [ n / y(default) ] : ', $selectDefaultLang);
+                if ($selectDefaultLang == 'y') {
+                    $configSet['defaultLang'] = $config['language']['slug'];
+                } else {
                     $configSet['defaultLang'] = "en";
                 }
 
-            }else{
+            } else {
                 $configSet['defaultLang'] = "en";
             }
             if (!isset($configSet['languages']['en'])) {
@@ -189,13 +189,29 @@ class app extends baseCommand
             $this->writeSuccess("\tresult : success" . "\n");
 
 
-            $this->writeSuccess(($step++)."- Create initial files ..." . "\n");
+            $this->writeSuccess(($step++) . "- Create initial files ..." . "\n");
 
             FS::copy(__DIR__ . '/temp/index.php', 'public/index.php');
             FS::copy(__DIR__ . '/temp/joonika', 'joonika');
-            FS::copy(__DIR__ . '/temp/indexApp.php', 'index.php');
             FS::copy(__DIR__ . '/temp/indexTheme.php', 'themes/sample/Views/index.php');
             FS::copy(__DIR__ . '/temp/gitignoreSample', '.gitignore');
+
+
+            $indexFile = FS::fileGetContent(__dir__ . "/temp/indexApp.php");
+            $projectName = "projectName";
+            $dirCheck = file_get_contents(JK_SITE_PATH() . 'composer.json');
+            if ($dirCheck) {
+                $jsonDecode = json_decode($dirCheck, JSON_UNESCAPED_UNICODE);
+                if (!empty($jsonDecode['name'])) {
+                    $projectName = $jsonDecode['name'];
+                } elseif (!empty($jsonDecode['description'])) {
+                    $projectName = $jsonDecode['description'];
+                }
+            }
+            $indexFile = str_replace('projectName', $projectName, $indexFile);
+            FS::filePutContent(JK_SITE_PATH() . "index.php", $indexFile);
+
+//            projectName
 
             $this->writeSuccess("\tresult : success" . "\n");
 
