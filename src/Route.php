@@ -721,6 +721,17 @@ class Route
 
         $routeExecutionTimeFinish = microtime(TRUE);
         $this->routeExecutionTime = $routeExecutionTimeFinish - $routeExecutionTimeStart;
+        $checkDbDuration=0;
+        if(!empty(Database::$instanceDuration)){
+            foreach (Database::$instanceDuration as $schema){
+                if(!empty($schema)){
+                    foreach ($schema as $s){
+                        @$checkDbDuration+=$s;
+                    }
+                }
+            }
+        }
+        @header('DatabaseExecutionTime: ' . $checkDbDuration);
         @header('RouteExecutionTime: ' . $this->routeExecutionTime);
     }
 

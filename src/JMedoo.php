@@ -11,15 +11,17 @@ class JMedoo extends Medoo\Medoo
 {
     public $cache = false;
     public $q = false;
+    public $schema = false;
 
     public function tableQuote(string $table): string
     {
         if (!preg_match('/^[a-zA-Z0-9_.]+$/i', $table)) {
             throw new InvalidArgumentException("Incorrect table name \"$table\"");
         }
+        $websiteDbConfig = JK_WEBSITE()['database'];
+        $schema=!empty($websiteDbConfig['db'])?$websiteDbConfig['db']:false;
         if (stripos($table, '.') !== false) {
             $schemaExplode = explode('.', $table);
-            $websiteDbConfig = JK_WEBSITE()['database'];
             $schema = '';
             if (!empty($websiteDbConfig['other'][$schemaExplode[0]])) {
                 $schemaF = $websiteDbConfig['other'][$schemaExplode[0]];
@@ -35,6 +37,7 @@ class JMedoo extends Medoo\Medoo
                 $table = $schema . '.' . $schemaExplode[1];
             }
         }
+        $this->schema = !empty($schema) ? $schema : false;
         return $this->prefix . $table;
     }
 
@@ -71,6 +74,13 @@ class JMedoo extends Medoo\Medoo
      */
     public function exec(string $statement, array $map = [], callable $callback = null): ?PDOStatement
     {
+        $durationStart=microtime(true);
+        if(!empty($this->schema)){
+            if(!empty(Database::$instanceDuration[$this->schema])){
+                Database::$instanceDuration[$this->schema]=[];
+            }
+        }
+
         $this->statement = null;
         $this->errorInfo = null;
         $this->error = null;
@@ -110,6 +120,7 @@ class JMedoo extends Medoo\Medoo
             $this->logs = [[$statement, $map]];
         }
 
+
         $statement = $this->pdo->prepare($statement);
         $errorInfo = $this->pdo->errorInfo();
 
@@ -143,6 +154,10 @@ class JMedoo extends Medoo\Medoo
         }
 
         if ($execute) {
+            if(!empty($this->schema)){
+                $duration=microtime(true)-$durationStart;
+                Database::$instanceDuration[$this->schema][]=round($duration,6);
+            }
             $this->statement = $statement;
         }
 
@@ -163,7 +178,8 @@ class JMedoo extends Medoo\Medoo
         &$columns = null,
         array $where = null,
         $columnFn = null
-    ): string {
+    ): string
+    {
         preg_match('/(?<table>[a-zA-Z0-9_.]+)\s*\((?<alias>[a-zA-Z0-9_]+)\)/i', $table, $table_match);
 //        dd($table_match);
         if (isset($table_match['table'], $table_match['alias'])) {
