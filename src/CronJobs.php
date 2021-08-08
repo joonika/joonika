@@ -25,7 +25,6 @@ class CronJobs
             ];
         }
         $getFunction = $database->get('cronjob_functions', "*", $conditions);
-
         if (!$getFunction) {
             $data = ['moduleName' => $moduleName, 'functionName' => $functionName, 'cronTab' => $cronTab, 'status' => "active"];
             if ($class) {

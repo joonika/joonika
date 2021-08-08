@@ -8,20 +8,20 @@ use Joonika\templates\redirects\RedirectTemplate;
 
 class Redirect
 {
-    protected static function error($code, $return = true, $msg = '',$extraCode='')
+    protected static function error($code, $return = true, $msg = '', $extraCode = '')
     {
         http_response_code($code);
         if ($return) {
-            self::template($code, $msg,$extraCode);
+            self::template($code, $msg, $extraCode);
         }
     }
 
-    protected static function defaultCodeTemplate($code, $msg = '',$extraCode='')
+    protected static function defaultCodeTemplate($code, $msg = '', $extraCode = '')
     {
-        templateRenderSimpleAlert($code, $msg,'',$extraCode);
+        templateRenderSimpleAlert($code, $msg, '', $extraCode);
     }
 
-    protected static function template($code, $msg = '',$extraCode='')
+    protected static function template($code, $msg = '', $extraCode = '')
     {
 
         $method = 'template' . $code;
@@ -30,8 +30,17 @@ class Redirect
         $errorPageInModule = '';
         $Route = Route::$instance;
         $error = "error" . $code;
-
-        if (is_object($Route) && !empty($Route->View->$error)) {
+        if ($Route->isApi) {
+            echo json_encode([
+                "success" => false,
+                "errors" => [
+                    [
+                        "message" => __("you are not logged in")
+                    ]
+                ],
+            ]);
+            exit();
+        } elseif (is_object($Route) && !empty($Route->View->$error)) {
             if (FS::isExistIsFile($Route->View->$error)) {
                 $output = NULL;
                 extract(['This' => $Route->View]);
@@ -40,7 +49,7 @@ class Redirect
                 $output = ob_get_clean();
                 echo $output;
             } else {
-                self::defaultCodeTemplate($code, $msg,$extraCode);
+                self::defaultCodeTemplate($code, $msg, $extraCode);
             }
         } elseif ($activeTheme && empty($Route->mainModule)) {
 
@@ -48,10 +57,10 @@ class Redirect
             if (FS::isExistIsFile($path)) {
                 include_once $path;
             } else {
-                self::defaultCodeTemplate($code,$msg,$extraCode);
+                self::defaultCodeTemplate($code, $msg, $extraCode);
             }
         } else {
-            self::defaultCodeTemplate($code,$msg,$extraCode);
+            self::defaultCodeTemplate($code, $msg, $extraCode);
         }
         die('');
     }
@@ -67,10 +76,10 @@ class Redirect
         redirect_to(url('cp/main/login'));
     }
 
-    public static function code($code, $msg = '',$extraCode="")
+    public static function code($code, $msg = '', $extraCode = "")
     {
         http_response_code($code);
-        return self::error($code, true, $msg,$extraCode);
+        return self::error($code, true, $msg, $extraCode);
     }
 
     public static function url($url)

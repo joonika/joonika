@@ -248,7 +248,7 @@ class Controller
     public function __destruct()
     {
         $this->prepareOutput();
-        if ($this->export == 'json' && $this->Route->isApi) {
+        if ($this->export == 'json' && !empty($this->Route->isApi)) {
             echo json_encode($this->output, 256 | 128);
             $this->Route->ViewRender = false;
         }

@@ -70,7 +70,7 @@ trait Response
     public function prepareOutput()
     {
         $statusMessageCode = Errors::statusCodeMessage($this->status);
-        if ($this->export == "json" && $this->Route->isApi) {
+        if ($this->export == "json" && !empty($this->Route->isApi)) {
             if(!$this->foundMethod && !empty($this->output['data']['success'])){
                 $this->success=false;
                 $this->status=404;
