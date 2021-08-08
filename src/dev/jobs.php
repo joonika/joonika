@@ -86,12 +86,12 @@ class jobs extends baseCommand
                             }
 
                         } else {
-                            $database->update('cronjob_functions', ['status' => "remove"], [
+                            $database->update('cronjob_functions', ['status' => "removed"], [
                                 "id" => $function['id']
                             ]);
                         }
                     } else {
-                        $database->update('cronjob_functions', ['status' => "remove"], [
+                        $database->update('cronjob_functions', ['status' => "removed"], [
                             "class" => $function['class']
                         ]);
                     }
@@ -103,7 +103,7 @@ class jobs extends baseCommand
                         }
 
                     } else {
-                        $database->update('cronjob_functions', ['status' => "remove"], [
+                        $database->update('cronjob_functions', ['status' => "removed"], [
                             "id" => $function['id']
                         ]);
                     }
