@@ -374,6 +374,7 @@ class Route
         } else {
             $portCheck = in_array($_SERVER['SERVER_PORT'], [80, 443]) ? '' : ('_' . $_SERVER['SERVER_PORT']);
             $domainGet=substr($_SERVER['HTTP_HOST'],0,strpos($_SERVER['HTTP_HOST'],':'));
+            $domainGet=!empty($domainGet)?$domainGet:$_SERVER['HTTP_HOST'];
             $requiredYamlFile = self::JK_SITE_PATH() . 'config/websites/' . $domainGet . $portCheck . '.yaml';
         }
         if (file_exists($requiredYamlFile)) {
