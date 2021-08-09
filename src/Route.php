@@ -439,8 +439,6 @@ class Route
         $this->setErrorReporting($routeConfig['debug'], E_ALL);
         self::$JK_URI = isset($_SERVER['REQUEST_URI']) ? $this->removeVariblesOfQueryString(ltrim($_SERVER['REQUEST_URI'], '/')) : null;
         self::$JK_URL = self::$JK_DOMAIN . (!empty(self::$JK_URI) ? ('/' . self::$JK_URI) : '');
-        $q = $this->getQueryString(ltrim($_SERVER['REQUEST_URI'], '/'));
-        $this->query_string = !empty($q) ? $q : null;
         self::$JK_WEBSITE_ID = !empty(self::$JK_WEBSITE['id']) ? self::$JK_WEBSITE['id'] : null;
         self::$JK_HOST = !empty(self::$JK_WEBSITE['domain']) ? self::$JK_WEBSITE['domain'] : null;
         if (!defined("JK_SERVER_TYPE")) {
@@ -449,6 +447,8 @@ class Route
 
         $path = array_values(array_filter(explode('/', self::JK_URI())));
         if (!$silentType) {
+            $q = $this->getQueryString(ltrim($_SERVER['REQUEST_URI'], '/'));
+            $this->query_string = !empty($q) ? $q : null;
             if (empty($path)) {
                 redirect_to(self::JK_URL() . self::$JK_WEBSITE['defaultLang']);
             }
