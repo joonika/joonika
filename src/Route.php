@@ -373,8 +373,8 @@ class Route
             $silentType = true;
         } else {
             $portCheck = in_array($_SERVER['SERVER_PORT'], [80, 443]) ? '' : ('_' . $_SERVER['SERVER_PORT']);
-            $domainGet=substr($_SERVER['HTTP_HOST'],0,strpos($_SERVER['HTTP_HOST'],':'));
-            $domainGet=!empty($domainGet)?$domainGet:$_SERVER['HTTP_HOST'];
+            $domainGet = substr($_SERVER['HTTP_HOST'], 0, strpos($_SERVER['HTTP_HOST'], ':'));
+            $domainGet = !empty($domainGet) ? $domainGet : $_SERVER['HTTP_HOST'];
             $requiredYamlFile = self::JK_SITE_PATH() . 'config/websites/' . $domainGet . $portCheck . '.yaml';
         }
         if (file_exists($requiredYamlFile)) {
@@ -414,14 +414,14 @@ class Route
                         if (isset($yamlParseFile['database']['other'])) {
                             $routeConfig['database']['other'] = $yamlParseFile['database']['other'];
                         }
-                    }else{
-                      unset($routeConfig['database']);
+                    } else {
+                        unset($routeConfig['database']);
                     }
                 }
             } catch (\Exception $exception) {
                 throw new \Exception("invalid yaml file");
             }
-        }elseif(!$silentType){
+        } elseif (!$silentType) {
             Errors::errorHandler(0, "config file has not correctly configs.", __FILE__, __LINE__);
         }
 
@@ -439,7 +439,8 @@ class Route
         $this->setErrorReporting($routeConfig['debug'], E_ALL);
         self::$JK_URI = isset($_SERVER['REQUEST_URI']) ? $this->removeVariblesOfQueryString(ltrim($_SERVER['REQUEST_URI'], '/')) : null;
         self::$JK_URL = self::$JK_DOMAIN . (!empty(self::$JK_URI) ? ('/' . self::$JK_URI) : '');
-        $this->query_string = isset($_SERVER['REQUEST_URI']) ? $this->getQueryString(ltrim($_SERVER['REQUEST_URI'], '/')) : null;
+        $q = $this->getQueryString(ltrim($_SERVER['REQUEST_URI'], '/'));
+        $this->query_string = !empty($q) ? $q : null;
         self::$JK_WEBSITE_ID = !empty(self::$JK_WEBSITE['id']) ? self::$JK_WEBSITE['id'] : null;
         self::$JK_HOST = !empty(self::$JK_WEBSITE['domain']) ? self::$JK_WEBSITE['domain'] : null;
         if (!defined("JK_SERVER_TYPE")) {
@@ -727,12 +728,12 @@ class Route
 
         $routeExecutionTimeFinish = microtime(TRUE);
         $this->routeExecutionTime = $routeExecutionTimeFinish - $routeExecutionTimeStart;
-        $checkDbDuration=0;
-        if(!empty(Database::$instanceDuration)){
-            foreach (Database::$instanceDuration as $schema){
-                if(!empty($schema)){
-                    foreach ($schema as $s){
-                        @$checkDbDuration+=$s;
+        $checkDbDuration = 0;
+        if (!empty(Database::$instanceDuration)) {
+            foreach (Database::$instanceDuration as $schema) {
+                if (!empty($schema)) {
+                    foreach ($schema as $s) {
+                        @$checkDbDuration += $s;
                     }
                 }
             }
@@ -1057,13 +1058,14 @@ class Route
 
     protected function getQueryString($url)
     {
+        $outout='';
         if ($url != '') {
-            $parts = explode("?", $url, 2);
+            $parts = explode("?", $url);
             if (isset($parts[1])) {
-                $url = $parts[1];
+                $outout = $parts[1];
             }
         }
-        return $url;
+        return $outout;
     }
 
     public function setForceNotRoute($forceNotRoute)
