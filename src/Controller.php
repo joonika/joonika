@@ -310,21 +310,21 @@ class Controller
         }
     }
 
-    public function unsetMapperDimArray($request, $keys = [])
+    public function arrayBlacklistUnset($request, $keys = [])
     {
 
         if (!empty($keys) && !empty($request)) {
             foreach ($keys as $k => $v) {
                 if (is_array($v)) {
                     if (isset($request[$k])) {
-                        $request[$k] = $this->unsetMapperDimArray($request[$k], $v);
+                        $request[$k] = $this->arrayBlacklistUnset($request[$k], $v);
                     }
                 } else {
                     if (isset($request[$v])) {
                         unset($request[$v]);
                     } elseif (is_array($request)) {
                         foreach ($request as $rvK => $rv) {
-                            $request[$rvK] = $this->unsetMapperDimArray($request[$rvK], [$v]);
+                            $request[$rvK] = $this->arrayBlacklistUnset($request[$rvK], [$v]);
                         }
                     }
 
