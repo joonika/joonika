@@ -1034,7 +1034,7 @@ class Route
             } elseif (!empty($this->themeRoute) && $this->hasThemeController()) {
                 $this->sendRequestToThemeController();
             }
-        } else if (!is_null($this->findModule) && $this->hasThemeController()) {
+        } else if (empty($this->findModule) && $this->hasThemeController()) {
             $this->sendRequestToThemeController();
         } else {
             new \Joonika\Controller($this);
