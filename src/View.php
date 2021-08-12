@@ -115,6 +115,13 @@ class View
 
                     $twig->addGlobal('app', app());
 
+                    foreach (listThemes() as $theme) {
+                        $themeView = $JK_SITE_PATH . 'themes/' . $theme . '/Views';
+                        if(is_dir($themeView)){
+                            $loader->addPath($themeView, $theme);
+                        }
+                    }
+
                     foreach (listModules() as $module) {
                         $moduleViews = $JK_SITE_PATH . 'modules/' . $module . '/Views';
                         if(!empty($this->pathModule[$module])){
