@@ -263,15 +263,14 @@ class AutomaticRouter
     private function searchInTheme()
     {
         $temp = $this->Route->path;
-        $tempViews=implode('/',$temp);
         $mod_temp = $temp[0];
-        $this->file = $tempViews;
+        $this->file = $mod_temp;
         unset($temp[0]);
         $temp = array_values($temp);
         if (!sizeof($temp) > 0 || sizeof($temp) == 1) {
             $temp[] = 'index';
         }
-        $type = ['theme', $tempViews];
+        $type = ['theme', $mod_temp];
         $this->Route->found = $this->findRoute(JK_SITE_PATH() . 'themes' . DS(), $type, $temp);
     }
 
