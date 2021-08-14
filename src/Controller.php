@@ -312,7 +312,6 @@ class Controller
 
     public function arrayBlacklistUnset($request, $keys = [])
     {
-
         if (!empty($keys) && !empty($request)) {
             foreach ($keys as $k => $v) {
                 if (is_array($v)) {
@@ -320,14 +319,13 @@ class Controller
                         $request[$k] = $this->arrayBlacklistUnset($request[$k], $v);
                     }
                 } else {
-                    if (isset($request[$v])) {
+                    if(is_array($request) && array_key_exists($v,$request)) {
                         unset($request[$v]);
                     } elseif (is_array($request)) {
                         foreach ($request as $rvK => $rv) {
                             $request[$rvK] = $this->arrayBlacklistUnset($request[$rvK], [$v]);
                         }
                     }
-
                 }
             }
         }
