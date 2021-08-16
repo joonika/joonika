@@ -673,6 +673,8 @@ class Idate
     {
         $option = [
             "name" => "datetime",
+            "value" => '',
+            "yearPicker" => "",
             "id" => "",
             "format" => 3,
             "inLine" => "false",
@@ -699,14 +701,19 @@ class Idate
             $option['lang'] = JK_LANG();
         }
         if ($option['lang'] != 'fa') {
-            $isGregorian = 'true';
+            $isGregorian = 'gregorian';
         } else {
-            $isGregorian = 'false';
+            $isGregorian = 'persian';
         }
         if ($option['format'] == 3) {
-            $enabletimepicker = "false";
+            $enabletimepicker = "";
         } else {
-            $enabletimepicker = "true";
+            $enabletimepicker = "timePicker: {
+                    enabled: true,
+                    meridiem: {
+                        enabled: true
+                    }
+                } ,";
         }
 
         if ($option['disabled'] == true) {
@@ -724,10 +731,20 @@ class Idate
         } else {
             $targetDateSelector = "";
         }
+        if ($option['yearPicker'] == true) {
+            $yearPicker = "viewMode : 'year',";
+        } else {
+            $yearPicker = "";
+        }
         if ($option['groupId'] == true) {
             $groupID = "groupId : '" . $option['groupId'] . "',";
         } else {
             $groupID = "";
+        }
+        if (empty($option['value'])) {
+            $initialValue = "initialValue: false,";
+        } else {
+            $initialValue = "";
         }
         $fromDate = "fromDate : " . $option['fromDate'] . ",";
         $toDate = "toDate : " . $option['toDate'] . ",";
@@ -736,15 +753,34 @@ class Idate
         if (empty($option['id'])) {
             $option['id'] = $option['name'];
         }
+        $formatString=$option['format']==3?"YYYY/MM/DD":"YYYY/MM/DD HH:mm:ss";
         AstCtrl::ADD_FOOTER_SCRIPTS('
         <script>
-            $(\'#' . $option['id'] . '\').MdPersianDateTimePicker({
+        
+            $(\'#' . $option['id'] . '\').persianDatepicker({
+            navigator:{
+                    scroll:{
+                        enabled: false
+                    }
+                },
+                onlySelectOnDate:true,
+                dayPicker:{
+                    onSelect: function (unix) {
+                        $(\'#' . $option['id'] . '\').trigger("change");
+                },
+                },
                 placement: \'' . $option['position'] . '\',
-                isGregorian: ' . $isGregorian . ',
+                observer: true,
+                format: "'.$formatString.'",
+                autoClose: true,
+                calendarType: "'.$isGregorian.'",
+                '.$initialValue.'
+                initialValueType: "'.$isGregorian.'",
                 yearOffset: 100,
-        		enableTimePicker: ' . $enabletimepicker . ',
+                ' . $enabletimepicker . '
         		targetTextSelector: \'#' . $option['id'] . '\',
                 inLine: ' . $option['inLine'] . ',
+                ' . $yearPicker . '
                 ' . $disabled . '
                 ' . $rangeSelector . '
                 ' . $groupID . '
@@ -892,6 +928,7 @@ class Idate
         $return = '';
         $option = [
             "title" => '',
+            "yearPicker" => "",
             "form-group" => true,
             "form-group-class" => '',
             "label-class" => '',
@@ -959,9 +996,12 @@ class Idate
         if (empty($option['id'])) {
             $option['id'] = $option['name'];
         }
+
         self::setDatetime([
             "name" => $option['name'],
+            "yearPicker" => $option['yearPicker'],
             "id" => $option['id'],
+            "value" => $value,
             "format" => $option['format'],
             "inLine" => $option['inLine'],
             "position" => $option['position'],
@@ -1002,7 +1042,6 @@ class Idate
         if ($option['disabled'] == "true") {
             $read = "readonly";
         }
-
         $return .= '
                 <input type="text" data-offset="-50%" class="form-control w-100  ' . $option['direction'] . '" ' . $read . ' readonly name="' . $option['name'] . '"  id="' . $option['id'] . '" value="' . $value . '"  ' . $requ . ' ' . $atts . ' >
     ';
@@ -1030,6 +1069,7 @@ class Idate
         return $return;
 
     }
+
     static function field_time($options = [])
     {
         global $data;
@@ -1089,7 +1129,7 @@ class Idate
         if (empty($option['id'])) {
             $option['id'] = $option['name'];
         }
-        if(!empty($value)){
+        if (!empty($value)) {
             AstCtrl::ADD_FOOTER_SCRIPTS('
             <script>
             $(function () {
@@ -1097,7 +1137,7 @@ class Idate
                     $(\'#' . $option['name'] . '\').clockTimePicker("value", "' . $value . '"); });
             </script>
             ');
-        }else{
+        } else {
             AstCtrl::ADD_FOOTER_SCRIPTS('
             <script>
             $(function () {
