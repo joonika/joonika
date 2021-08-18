@@ -274,7 +274,7 @@ class app extends baseCommand
         $modulesInVendor = glob(JK_SITE_PATH() . 'vendor/joonika/module-*');
         if (!empty($modulesInVendor)) {
             foreach ($modulesInVendor as $moduleInVendor) {
-                $moduleName = explode('-', $moduleInVendor);
+                $moduleName = explode('-', basename($moduleInVendor));
                 if (sizeof($moduleName) == 2) {
                     $moduleCheckName = $moduleName[1];
                     if (FS::isExist($moduleInVendor . '/src/assets')) {

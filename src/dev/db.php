@@ -76,6 +76,12 @@ class db extends baseCommand
                     ],
                 ]
             ],
+            "db:translateApi" => [
+                "title" => "translate via core api of joonika website",
+            ],
+            "db:translateApiExport" => [
+                "title" => "translate export ready for core api of joonika website",
+            ],
             "db:translateExport" => [
                 "title" => "get export from trnaslate table",
                 "arguments" => ["name"],
@@ -570,14 +576,13 @@ class db extends baseCommand
             if ($empty) {
                 $condittion['AND']['text'] = '';
             }
-
             $translates = Database::select('jk_translate', '*', $condittion);
             if (checkArraySize($translates)) {
+                $this->writeInfo("please enter translate of :\n\t");
                 foreach ($translates as $k => $v) {
-                    $this->writeInfo("please enter translate of :\n\t");
                     $this->ask($v['var'] . " | lang : " . $v['lang'] . " | module : " . $v['dest'], $kv);
                     if ($kv) {
-                        Database::update('jk_translate', ['text' => $kv], ['var' => $k]);
+                        Database::update('jk_translate', ['text' => $kv], ['id' => $v['id']]);
                         $this->writeSuccess("saved");
                     } else {
                         $this->writeError('not saved');
@@ -611,6 +616,113 @@ class db extends baseCommand
                 }
             } else {
                 $this->writeError('not found any string');
+            }
+        } else {
+            $this->writeError('translate table not exist');
+        }
+    }
+
+    public function translateApi()
+    {
+        $selectedDb = $this->dbSelect();
+        $tableList = self::getTables($selectedDb['db']);
+        if (in_array('jk_translate', $tableList)) {
+            $condittion = [];
+            $condittion['AND']['text'] = '';
+            $translates = Database::select('jk_translate', '*', $condittion);
+            if (checkArraySize($translates)) {
+                $this->writeInfo("check from api :\n\t");
+                foreach ($translates as $k => $v) {
+                    $stringTxt = $v['var'] . " | lang : " . $v['lang'] . " | module : " . $v['dest'];
+                    $this->writeInfo($stringTxt);
+                    $postArray = $v;
+                    $curl = curl_init();
+                    $url = "https://api.joonika.com/" . $v['lang'] . "/api/translate/search/simple";
+                    curl_setopt_array($curl, array(
+                        CURLOPT_URL => $url,
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_ENCODING => "",
+                        CURLOPT_MAXREDIRS => 10,
+                        CURLOPT_TIMEOUT => 0,
+                        CURLOPT_FOLLOWLOCATION => true,
+                        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                        CURLOPT_CUSTOMREQUEST => "POST",
+                        CURLOPT_POSTFIELDS => http_build_query($postArray),
+                    ));
+                    $response = curl_exec($curl);
+                    $err = curl_error($curl);
+                    curl_close($curl);
+                    if ($err) {
+                        $this->writeError($err);
+                        return true;
+                    }
+                    $jsonResponse = is_json($response, true, true);
+                    if (!empty($jsonResponse['data']['text'])) {
+                        Database::update('jk_translate', ['text' => $jsonResponse['data']['text']], ['id' => $v['id']]);
+                        $this->writeSuccess("saved");
+                    } else {
+                        $this->writeError('not saved');
+                    }
+                }
+                $this->writeInfo('translate table updated succeesfull');
+
+            } else {
+                $this->writeError('not found any string');
+            }
+        } else {
+            $this->writeError('translate table not exist');
+        }
+    }
+
+    public function translateApiExport()
+    {
+        $selectedDb = $this->dbSelect();
+        $tableList = self::getTables($selectedDb['db']);
+        if (in_array('jk_translate', $tableList)) {
+            $conditions = [];
+            $conditions['AND']['OR']['text[!]'] = '';
+            $setLang = null;
+            $strings = Database::select('jk_translate', '*', $conditions);
+            if (checkArraySize($strings)) {
+                try {
+                    $spreadsheet = new Spreadsheet();
+                    $sheet = $spreadsheet->getActiveSheet();
+                    $row = 1;
+                    foreach ($strings as $key => $val) {
+                        $sheet->setCellValue('A' . $row, $val['var']);
+                        $sheet->setCellValue('B' . $row, $val['lang']);
+                        $sheet->setCellValue('C' . $row, $val['text']);
+                        $sheet->setCellValue('D' . $row, $val['status']);
+                        $sheet->setCellValue('E' . $row, $val['dest']);
+                        $sheet->setCellValue('F' . $row, $val['type']);
+                        $row += 1;
+                    }
+
+                    $writer = new Xlsx($spreadsheet);
+
+                        $filename =  'translateApiExport.xlsx';
+
+                    $folder = 'files/tmp';
+                    if (!FS::isDir(JK_SITE_PATH() . 'storage' . DS() . $folder)) {
+                        FS::mkDir(JK_SITE_PATH() . 'storage' . DS() . $folder);
+                    }
+                    $path = $folder . DS() . $filename;
+
+                    if (isset($path)) {
+                        $file = JK_SITE_PATH() . 'storage' . DS() . $path;
+                        if (empty($writer)) {
+                            $writer = new Xlsx($spreadsheet);
+                        }
+                        $writer->save($file);
+                    }
+                    $this->writeInfo('backup file created in /storage/' . $path);
+                    exit();
+
+                } catch (\PhpOffice\PhpSpreadsheet\Exception $e) {
+                    dd($e);
+                }
+            } else {
+                $this->writeError('not found any strings');
             }
         } else {
             $this->writeError('translate table not exist');
