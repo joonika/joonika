@@ -528,7 +528,7 @@ class Route
         $modulesInVendor = glob(self::JK_SITE_PATH() . 'vendor/joonika/module-*');
         if (checkArraySize($modulesInVendor)) {
             foreach ($modulesInVendor as $moduleInVendor) {
-                $moduleName = explode('-', $moduleInVendor);
+                $moduleName = explode('-', basename($moduleInVendor));
                 if (sizeof($moduleName) == 2) {
                     $moduleCheckName = $moduleName[1];
                     $this->modulesInVendor[] = $moduleCheckName;
