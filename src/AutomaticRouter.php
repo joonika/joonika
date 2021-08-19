@@ -289,6 +289,7 @@ class AutomaticRouter
                 $type = ['theme', $data['module'], $data];
                 $this->Route->jk_data = $data;
                 $this->Route->found = $this->findRoute(JK_SITE_PATH() . 'themes' . DS(), $type, $temp);
+
                 if ($this->Route->found) {
                     $this->Route->path = array_merge([$data['module'], 'view', $data['id']], $this->Route->path);
                 }

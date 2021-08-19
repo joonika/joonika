@@ -110,6 +110,7 @@ class joonika extends Migration
                     "executionTime"=>$this->float(),
                     "executeAt"=>$this->datetime(false),
                     "outputReturn"=>$this->int(0,1),
+                    "cronTask"=>$this->int(-1,2),
                 ],
             ],
             "cronjob_functions" => [

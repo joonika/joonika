@@ -48,7 +48,7 @@ class events
         }
 
         if ($this->runByCronJob) {
-            $listeners = Database::query("SELECT * FROM jk_listeners_queue WHERE (executeAt is null && result=0 ) || ( executeAt<now() && result=0)")->fetchAll(\PDO::FETCH_ASSOC);
+            $listeners = Database::query("SELECT * FROM jk_listeners_queue WHERE cronTask=0 AND ( executeAt is null ||  executeAt<now() ) AND result=0")->fetchAll(\PDO::FETCH_ASSOC);
             if (checkArraySize($listeners)) {
                 foreach ($this->priorities as $priority) {
                     foreach ($listeners as $listener) {
@@ -132,22 +132,10 @@ class events
                         $listenerID = sizeof($classExplode) == 2 ? $classExplode[1] : null;
 
                         if (method_exists($class, $method)) {
-
-                            if ($listenerID) {
-                                $listenerConditions = [
-                                    "id" => $listenerID
-                                ];
-                            } else {
-                                $listenerConditions = [
-                                    "AND" => [
-                                        'listener' => $method,
-                                        'inputs' => $inputs
-                                    ]
-                                ];
+                            if (!empty($listenerID)) {
+                                $existListener = Database::get('jk_listeners_queue', '*', ['id'=>$listenerID]);
+                                $listenerID = $existListener ? $existListener['id'] : null;
                             }
-
-                            $existListener = Database::get('jk_listeners_queue', '*', $listenerConditions);
-                            $listenerID = $existListener ? $existListener['id'] : null;
                             if (!$this->runByCronJob) {
                                 $inputsConditions = [
                                     "listener" => $method,
@@ -160,6 +148,7 @@ class events
                                 ];
                                 if ($this->after > 1) {
                                     $inputsConditions['executeAt'] = date('Y/m/d H:i:s', time() + $this->after);
+                                    $inputsConditions['cronTask'] = 0;
                                 }
 
                                 Database::insert('jk_listeners_queue', $inputsConditions);
@@ -173,7 +162,6 @@ class events
                                             'id' => $listenerID
                                         ]
                                     ]);
-
                                     if ($oldListener) {
                                         $executionTimeStart = microtime(TRUE);
                                         try {
@@ -229,7 +217,6 @@ class events
                 }
             }
         }
-
         if ($this->return) {
             if (checkArraySize($this->returnErrors)) {
                 return [
