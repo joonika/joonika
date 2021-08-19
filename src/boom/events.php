@@ -164,6 +164,10 @@ class events
                                     ]);
                                     if ($oldListener) {
                                         $executionTimeStart = microtime(TRUE);
+                                        $cronTask=$oldListener['cronTask'];
+                                        if($oldListener['cronTask']==0){
+                                            $cronTask=1;
+                                        }
                                         try {
                                             Database::update('jk_listeners_queue', [
                                                 'lastTryTime' => now()
@@ -188,14 +192,16 @@ class events
                                             }
 
                                             Database::update('jk_listeners_queue', [
-                                                "executionTime" => microtime(TRUE) - $executionTimeStart
+                                                "executionTime" => microtime(TRUE) - $executionTimeStart,
+                                                "cronTask" => $cronTask,
                                             ], ['id' => $oldListener['id']]);
 
                                         } catch (\Exception $exception) {
                                             Database::update("jk_listeners_queue", [
                                                 "errors" => Errors::exceptionString($exception),
                                                 "lastErrorDate" => date("Y-m-d H:i:s"),
-                                                "executionTime" => microtime(TRUE) - $executionTimeStart
+                                                "executionTime" => microtime(TRUE) - $executionTimeStart,
+                                                "cronTask" => $cronTask,
                                             ], [
                                                 "id" => $listenerID
                                             ]);
