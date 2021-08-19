@@ -34,7 +34,7 @@ class Database
                     $dbList['main'] = $mainDb;
                     $entire = [];
 
-                    if (checkArraySize($WEBSITE['database']['other'])) {
+                    if (!empty($WEBSITE['database']['other'])) {
                         foreach ($WEBSITE['database']['other'] as $otherK => $otherV) {
                             if (gettype($otherV) == 'array') {
                                 $entire = array_merge($mainDb, $otherV);
