@@ -4,7 +4,7 @@
 namespace Joonika\Middlewares;
 
 
-use Config\SortMiddleWare;
+use Config\sortMiddleWare;
 use Joonika\configs\MiddleWareSort;
 use Joonika\FS;
 use Joonika\Route;
@@ -40,7 +40,7 @@ class kernel extends Middleware
     public function __construct($userID, Route $Route)
     {
         parent::__construct($userID, $Route);
-        $middleWareSortClass = "Config\\SortMiddleWare";
+        $middleWareSortClass = "Config\\sortMiddleWare";
         $modulesArrange = [];
         if (class_exists($middleWareSortClass)) {
             $middleWareSort = new $middleWareSortClass();
