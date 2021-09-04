@@ -130,6 +130,23 @@ class joonika extends Migration
                     "class"=>$this->varchar(),
                 ],
             ],
+            "jk_temp" => [
+                "version" => 1,
+                "columns" => [
+                    "id" => $this->id_structure(true),
+                    "name"=>$this->varchar(),
+                    "value"=>$this->varchar(),
+                    "datetime"=>$this->datetime(true),
+                    "expire"=>$this->datetime(false),
+                    "userId"=>$this->int(),
+                    "companyId"=>$this->int(),
+                ],
+                "indexes" => [
+                    "name",
+                    "name,userId,companyId",
+                    "expire",
+                ],
+            ],
         ];
     }
 }

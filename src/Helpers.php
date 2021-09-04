@@ -632,7 +632,7 @@ if (!function_exists('value')) {
 if (!function_exists('redirect_to')) {
     function redirect_to($url = "")
     {
-        $url=rtrim($url,'/');
+        $url = rtrim($url, '/');
         header('Location: ' . $url);
         exit;
     }
@@ -790,7 +790,7 @@ if (empty($isAjax)) {
         <div>
             <?php
             $codeView = $code;
-            if(!empty($extraCode)){
+            if (!empty($extraCode)) {
                 $codeView = $codeView . '-' . $extraCode;
             }
             ?>
@@ -3102,32 +3102,78 @@ if (!function_exists('callControllerApi')) {
             $response = curl_exec($curl);
             $err = curl_error($curl);
             curl_close($curl);
-            if($err){
+            if ($err) {
                 return [
-                    "success"=>false,
-                    "errors"=>[
-                        "message"=>$err
+                    "success" => false,
+                    "errors" => [
+                        "message" => $err
                     ],
                 ];
             }
-            $isJson=is_json($response,true,true);
-            if($isJson){
+            $isJson = is_json($response, true, true);
+            if ($isJson) {
                 return $isJson;
-            }else{
+            } else {
                 return [
-                    "success"=>false,
-                    "errors"=>[
-                        "message"=>'data not valid->'.$response
+                    "success" => false,
+                    "errors" => [
+                        "message" => 'data not valid->' . $response
                     ],
                 ];
             }
         } catch (Exception $exception) {
             return [
-                "success"=>false,
-                "errors"=>[
-                    "message"=>\Joonika\Errors::exceptionString($exception)
+                "success" => false,
+                "errors" => [
+                    "message" => \Joonika\Errors::exceptionString($exception)
                 ],
             ];
+        }
+    }
+}
+
+if (!function_exists('jk_temp_get')) {
+    function jk_temp_get($name, $userId = null, $companyId = null)
+    {
+        $database = Database::connect();
+        return $database->get('jk_temp', 'value', [
+            "name" => $name,
+            "userId" => $userId,
+            "companyId" => $companyId,
+        ]);
+    }
+}
+
+if (!function_exists('jk_temp_set')) {
+    function jk_temp_set($name, $value = null, $expireSeconds = 3600, $userId = null, $companyId = null)
+    {
+
+        $database = Database::connect();
+        $columns = [
+            "value" => $value,
+            "name" => $name,
+            "userId" => $userId,
+            "companyId" => $companyId,
+            "expire" => date('Y-m-d H:i:s', time() + $expireSeconds),
+        ];
+        $has = $database->get('jk_temp', 'id', [
+            "name" => $name,
+            "userId" => $userId,
+            "companyId" => $companyId,
+        ]);
+        if ($has) {
+            $columns = [
+                "value" => $value,
+                "name" => $name,
+                "userId" => $userId,
+                "companyId" => $companyId,
+                "expire" => date('Y-m-d H:i:s', time() + $expireSeconds),
+            ];
+            $database->update('jk_temp', $columns, [
+                "id" => $has
+            ]);
+        } else {
+            $database->insert('jk_temp', $columns);
         }
     }
 }
