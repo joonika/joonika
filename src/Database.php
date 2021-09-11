@@ -94,7 +94,7 @@ class Database
         }
     }
 
-    public static function connect($dbName = null)
+    public static function connect($dbName = null): JMedoo
     {
         if (empty($dbName['db'])) {
             $db = JK_WEBSITE()['database'];
