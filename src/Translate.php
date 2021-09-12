@@ -60,7 +60,9 @@ class Translate
     public static function routeLanguage()
     {
         global $translate;
+
         $translate = [];
+
         $langAddress = JK_SITE_PATH() . 'storage/langs/' . self::getLang() . '.yaml';
         if (!FS::isExistIsFileIsReadable($langAddress)) {
             $entries = Database::query('SELECT SQL_CACHE `id`,`var`,`text`,`dest`,`type` FROM `jk_translate` WHERE `lang` = \'' . self::getLang() . '\'')->fetchAll(\PDO::FETCH_ASSOC);
