@@ -612,12 +612,13 @@ class Route
         self::$JK_DIR_THEMES = self::JK_SITE_PATH() . 'themes' . self::DS();
         self::$JK_DIR_JOONIKA = self::JK_SITE_PATH() . 'vendor' . self::DS() . 'joonika' . self::DS() . 'joonika' . self::DS() . 'src' . self::DS();
         $systemHasUsers = in_array('users', listModules());
+
         if (!$silentType) {
             global $translate;
             $translate = [];
             $userToken = false;
             if (!is_null($this->database) && $systemHasUsers) {
-                Translate::TR();
+                Translate::routeLanguage();
                 $expiredTokenAfter = !empty(self::$JK_WEBSITE['expiredTokenAfter']) ? self::$JK_WEBSITE['expiredTokenAfter'] : 172800;
                 $token = $this->requests->headers('token') ?? null;
 //                session_destroy();
@@ -698,7 +699,6 @@ class Route
                     }
                 }
             }
-//            jdie($_COOKIE);
             $middleWare = new kernel(self::JK_LOGINID(), $this);
             $middleWare->dispatch();
 

@@ -4,6 +4,7 @@ namespace Joonika;
 
 
 use Medoo\Medoo;
+use Symfony\Component\Yaml\Yaml;
 
 class Translate
 {
@@ -56,8 +57,30 @@ class Translate
         }
     }
 
+    public static function routeLanguage()
+    {
+        $translate = [];
+
+        $langAddress = JK_SITE_PATH() . 'storage/langs/' . self::getLang() . '.yaml';
+        if (!FS::isExistIsFileIsReadable($langAddress)) {
+            $entries = Database::query('SELECT SQL_CACHE `id`,`var`,`text`,`dest`,`type` FROM `jk_translate` WHERE `lang` = \'' . self::getLang() . '\'')->fetchAll(\PDO::FETCH_ASSOC);
+            if (!empty($entries)) {
+                foreach ($entries as $key => $val) {
+                    if (!isset($translate[trim($val['var'])]) || $translate[trim($val['var'])] == "") {
+                        $translate[trim($val['var'])] = trim($val['text']);
+                    }
+                }
+            }
+            $new_yaml = Yaml::dump($translate, 5);
+            file_put_contents($langAddress, $new_yaml);
+        }else{
+            $translate=Yaml::parse(file_get_contents($langAddress));
+        }
+    }
+
     public function initTranslate($details = null)
     {
+
         global $translate;
         $translate = [];
         $destLang = 'main';
@@ -342,17 +365,17 @@ class Translate
                         "dest" => $dest,
                         "type" => $type,
                     ]);
-                }else{
-                   if(trim($varTexts[$key])==""){
-                       $database->update("jk_translate", [
-                           "text" => trim($val),
-                       ],[
-                           "var"=>$key,
-                           "lang" => self::getLang(),
-                           "dest" => $dest,
-                           "type" => $type,
-                       ]);
-                   }
+                } else {
+                    if (trim($varTexts[$key]) == "") {
+                        $database->update("jk_translate", [
+                            "text" => trim($val),
+                        ], [
+                            "var" => $key,
+                            "lang" => self::getLang(),
+                            "dest" => $dest,
+                            "type" => $type,
+                        ]);
+                    }
                 }
             }
         }
@@ -373,6 +396,7 @@ class Translate
             self::$instance = null;
         }
         if (self::$instance == null) {
+
             self::$instance = new Translate($module, $details);
         }
         return self::$instance;

@@ -10,6 +10,7 @@ namespace Joonika;
 
 
 use Joonika\UAC\UAC;
+use Symfony\Component\Yaml\Yaml;
 
 class AutomaticRouter
 {
@@ -49,6 +50,10 @@ class AutomaticRouter
     public function exexDispath()
     {
         if (checkArraySize($this->Route->path)) {
+            $fileSave=JK_SITE_PATH().'storage/private/routes.yaml';
+            if(FS::isExistIsFileIsReadable($fileSave)){
+                $yaml = Yaml::parse(file_get_contents($fileSave));
+            }
             $this->searchInModules();
             if (!$this->Route->found) {
                 if (!is_null($this->Route->database)) {
