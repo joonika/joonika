@@ -62,9 +62,9 @@ class Translate
         global $translate;
 
         $translate = [];
-
-        $langAddress = JK_SITE_PATH() . 'storage/langs/' . self::getLang() . '.yaml';
-        if (!FS::isExistIsFileIsReadable($langAddress)) {
+        $domainFileName='language_'.rtrim(JK_DOMAIN_WOP(),'/');
+        $langCache=\Joonika\helper\Cache::get($domainFileName);
+        if(empty($langCache)){
             $entries = Database::query('SELECT SQL_CACHE `id`,`var`,`text`,`dest`,`type` FROM `jk_translate` WHERE `lang` = \'' . self::getLang() . '\'')->fetchAll(\PDO::FETCH_ASSOC);
             if (!empty($entries)) {
                 foreach ($entries as $key => $val) {
@@ -73,10 +73,9 @@ class Translate
                     }
                 }
             }
-            $new_yaml = Yaml::dump($translate, 5);
-            file_put_contents($langAddress, $new_yaml);
+            \Joonika\helper\Cache::set($domainFileName,$translate,60);
         }else{
-            $translate=Yaml::parse(file_get_contents($langAddress));
+            $translate=$langCache;
         }
         self::$translate = $translate;
     }
