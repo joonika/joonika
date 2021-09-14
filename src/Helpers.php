@@ -2121,23 +2121,23 @@ function langDefineGet($lang, $table, $column, $var)
 {
     $database = Database::connect();
     $back = '';
-    $concatName=$lang."_".$table."_".$column."_".$var;
-    $langCache=\Joonika\helper\Cache::get($concatName);
-    if(empty($langCache)){
+    $concatName = $lang . "_" . $table . "_" . $column . "_" . $var;
+    $langCache = \Joonika\helper\Cache::get($concatName);
+    if (empty($langCache)) {
         $text = $database->query("SELECT SQL_CACHE text FROM jk_lang_defined WHERE tableName = '$table' AND lang = '$lang' AND varCol = '$column' AND var = '$var' LIMIT 1")->fetch(\PDO::FETCH_ASSOC);
-        if(empty($text['text'])){
+        if (empty($text['text'])) {
             $text = $database->query("SELECT SQL_CACHE text FROM jk_lang_defined WHERE tableName = '$table' AND lang = 'en' AND varCol = '$column' AND var = '$var' LIMIT 1")->fetch(\PDO::FETCH_ASSOC);
         }
-        if(!empty($text['text'])){
-            $back=$text['text'];
+        if (!empty($text['text'])) {
+            $back = $text['text'];
         }
-    }else{
-        $back=$langCache;
+    } else {
+        $back = $langCache;
     }
-    if(!empty($back) && empty($langCache)){
-        \Joonika\helper\Cache::set($concatName,$back,60);
+    if (!empty($back) && empty($langCache)) {
+        \Joonika\helper\Cache::set($concatName, $back, 60);
     }
-    return !empty($back)?$back:'';
+    return !empty($back) ? $back : '';
 }
 
 if (!function_exists('pagination')) {
@@ -2386,13 +2386,24 @@ function hr_html()
     return "<hr/>";
 }
 
-function jk_options_get($name)
+function jk_options_get($name, $cache = true)
 {
+    $domainFileName = 'jk_options_' . $name;
+    if ($cache) {
+        $cacheGet = \Joonika\helper\Cache::get($domainFileName);
+        if (!empty($cacheGet)) {
+            return $cacheGet;
+        }
+    }
     $database = Database::connect();
     if (!is_null($database)) {
-        return $database->cache()->get('jk_options', 'value', [
+        $value = $database->cache()->get('jk_options', 'value', [
             "name" => $name
         ]);
+        if ($cache) {
+            \Joonika\helper\Cache::set($domainFileName, $value, 10);
+        }
+        return $value;
     } else {
         return null;
     }
