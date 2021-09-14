@@ -2,6 +2,8 @@
 
 namespace Joonika\helper;
 
+use Joonika\helper\libs\voku\helper\ASCII;
+
 class Str
 {
 
