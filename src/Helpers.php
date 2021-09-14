@@ -2121,16 +2121,23 @@ function langDefineGet($lang, $table, $column, $var)
 {
     $database = Database::connect();
     $back = '';
-    $text = $database->query("SELECT SQL_CACHE text FROM jk_lang_defined WHERE tableName = '$table' AND lang = '$lang' AND varCol = '$column' AND var = '$var' LIMIT 1")->fetch(\PDO::FETCH_ASSOC);
-    if (!empty($text['text'])) {
-        $back = $text['text'];
-    } else {
-        $text = $database->query("SELECT SQL_CACHE text FROM jk_lang_defined WHERE tableName = '$table' AND lang = 'en' AND varCol = '$column' AND var = '$var' LIMIT 1")->fetch(\PDO::FETCH_ASSOC);
-        if (isset($text['text'])) {
-            $back = $text['text'] . ' (en)';
+    $concatName=$lang."_".$table."_".$column."_".$var;
+    $langCache=\Joonika\helper\Cache::get($concatName);
+    if(empty($langCache)){
+        $text = $database->query("SELECT SQL_CACHE text FROM jk_lang_defined WHERE tableName = '$table' AND lang = '$lang' AND varCol = '$column' AND var = '$var' LIMIT 1")->fetch(\PDO::FETCH_ASSOC);
+        if(empty($text['text'])){
+            $text = $database->query("SELECT SQL_CACHE text FROM jk_lang_defined WHERE tableName = '$table' AND lang = 'en' AND varCol = '$column' AND var = '$var' LIMIT 1")->fetch(\PDO::FETCH_ASSOC);
         }
+        if(!empty($text['text'])){
+            $back=$text['text'];
+        }
+    }else{
+        $back=$langCache;
     }
-    return $back;
+    if(!empty($back) && empty($langCache)){
+        \Joonika\helper\Cache::set($concatName,$back,60);
+    }
+    return !empty($back)?$back:'';
 }
 
 if (!function_exists('pagination')) {
