@@ -4,6 +4,7 @@ namespace Joonika;
 
 
 use Medoo\Medoo;
+use Symfony\Component\Yaml\Yaml;
 
 class Translate
 {
@@ -18,7 +19,7 @@ class Translate
     private $finalSeperateResult = [];
     //----
     public $exportFiles = [];
-    private $translate;
+    private static $translate;
     private $oldDatabaseTranslate = [];
     private static $module = null;
     //-------------
@@ -36,7 +37,7 @@ class Translate
         if ($module) {
             self::$module = $module;
             $translate = [];
-            $this->translate = [];
+            self::$translate = [];
             $type = explode("||", $module)[0];
             $dest = explode("||", $module)[1];
 
@@ -50,14 +51,38 @@ class Translate
                     }
                 }
             }
-            $this->translate = $translate;
+            self::$translate = $translate;
         } else {
             $this->initTranslate($details);
         }
     }
 
+    public static function routeLanguage()
+    {
+        global $translate;
+
+        $translate = [];
+        $domainFileName='language_'.rtrim(JK_DOMAIN_WOP(),'/');
+        $langCache=\Joonika\helper\Cache::get($domainFileName);
+        if(empty($langCache)){
+            $entries = Database::query('SELECT SQL_CACHE `id`,`var`,`text`,`dest`,`type` FROM `jk_translate` WHERE `lang` = \'' . self::getLang() . '\'')->fetchAll(\PDO::FETCH_ASSOC);
+            if (!empty($entries)) {
+                foreach ($entries as $key => $val) {
+                    if (!isset($translate[trim($val['var'])]) || $translate[trim($val['var'])] == "") {
+                        $translate[trim($val['var'])] = trim($val['text']);
+                    }
+                }
+            }
+            \Joonika\helper\Cache::set($domainFileName,$translate,60);
+        }else{
+            $translate=$langCache;
+        }
+        self::$translate = $translate;
+    }
+
     public function initTranslate($details = null)
     {
+
         global $translate;
         $translate = [];
         $destLang = 'main';
@@ -76,7 +101,7 @@ class Translate
                 }
             }
         }
-        $this->translate = $translate;
+        self::$translate = $translate;
         $this->oldDatabaseTranslate = $entries;
     }
 
@@ -154,9 +179,9 @@ class Translate
             }
         }
         /*       $this->exportFiles = [];
-               if (isset($this->translate[trim($key)])) {
-                   $this->translate[trim($key)] = trim($val);
-                   $this->exportFiles = $this->translate;
+               if (isset(self::$translate[trim($key)])) {
+                   self::$translate[trim($key)] = trim($val);
+                   $this->exportFiles = self::$translate;
                }
 
                $type = explode("||", $module)[0];
@@ -226,8 +251,8 @@ class Translate
             foreach ($lang as $key => $val) {
                 $exKey = $oldTranslate ? trim($key) : strtolower(trim($val));
                 $exVal = $oldTranslate ? strtolower(trim($val)) : "";
-                if (isset($this->translate[$exKey]) && $this->translate[$exKey] != "") {
-                    $this->exportFiles[$type][$dest][$exKey] = $this->translate[$exKey];
+                if (isset(self::$translate[$exKey]) && self::$translate[$exKey] != "") {
+                    $this->exportFiles[$type][$dest][$exKey] = self::$translate[$exKey];
                 } else {
                     if ($exVal == '' && self::getLang() == "en") {
                         $this->exportFiles[$type][$dest][$exKey] = $exKey;
@@ -277,8 +302,8 @@ class Translate
     public function deleteUnExistStrings()
     {
         $notFound = [];
-        if (checkArraySize($this->translate)) {
-            foreach ($this->translate as $translateKey => $translateValue) {
+        if (checkArraySize(self::$translate)) {
+            foreach (self::$translate as $translateKey => $translateValue) {
                 $found = false;
                 foreach ($this->exportFiles as $exportFileKey => $exportFileVal) {
                     if (checkArraySize($exportFileVal)) {
@@ -342,17 +367,17 @@ class Translate
                         "dest" => $dest,
                         "type" => $type,
                     ]);
-                }else{
-                   if(trim($varTexts[$key])==""){
-                       $database->update("jk_translate", [
-                           "text" => trim($val),
-                       ],[
-                           "var"=>$key,
-                           "lang" => self::getLang(),
-                           "dest" => $dest,
-                           "type" => $type,
-                       ]);
-                   }
+                } else {
+                    if (trim($varTexts[$key]) == "") {
+                        $database->update("jk_translate", [
+                            "text" => trim($val),
+                        ], [
+                            "var" => $key,
+                            "lang" => self::getLang(),
+                            "dest" => $dest,
+                            "type" => $type,
+                        ]);
+                    }
                 }
             }
         }
@@ -373,6 +398,7 @@ class Translate
             self::$instance = null;
         }
         if (self::$instance == null) {
+
             self::$instance = new Translate($module, $details);
         }
         return self::$instance;
@@ -380,7 +406,7 @@ class Translate
 
     public function getTranslate()
     {
-        return $this->translate;
+        return self::$translate;
     }
 
     public function createVueTranslateFiles()

@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Joonika\cache;
+namespace Joonika\helper;
 
 
 use Config\SiteConfigs;
@@ -18,9 +18,14 @@ class Cache
     private function __construct()
     {
 
-        $JK_CACHE_SETTING = !empty(JK_WEBSITE()['cacheSetting']) ? JK_WEBSITE()['cacheSetting'] : null;
+        $JK_CACHE_SETTING = !empty(JK_WEBSITE()['cacheSetting']) ? JK_WEBSITE()['cacheSetting'] : [
+            "path"=>JK_SITE_PATH().'storage/private/',
+            "driver"=>'Files',
+        ];
+        $JK_CACHE_SETTING['path']=!empty($JK_CACHE_SETTING['path'])?$JK_CACHE_SETTING['path']:(JK_SITE_PATH().'storage/private/');
+        $JK_CACHE_SETTING['driver']=!empty($JK_CACHE_SETTING['driver'])?$JK_CACHE_SETTING['driver']:'Files';
         CacheManager::setDefaultConfig(new Config([
-            "path" => JK_SITE_PATH() . $JK_CACHE_SETTING['path'],
+            "path" => $JK_CACHE_SETTING['path'],
             "itemDetailedDate" => false
         ]));
         static::$instance = CacheManager::getInstance($JK_CACHE_SETTING['driver']);

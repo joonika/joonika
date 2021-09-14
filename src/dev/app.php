@@ -52,6 +52,7 @@ class app extends baseCommand
             FS::mkDir(JK_SITE_PATH() . "storage/files", 0777, true);
             FS::mkDir(JK_SITE_PATH() . "storage/langs", 0777, true);
             FS::mkDir(JK_SITE_PATH() . "storage/logs", 0777, true);
+            FS::mkDir(JK_SITE_PATH() . "storage/private", 0777, true);
             FS::mkDir(JK_SITE_PATH() . "themes/sample/Views", 0777, true);
 
             $this->writeInfo(($step++) . "/5 - create config ...");
@@ -148,7 +149,7 @@ class app extends baseCommand
             file_put_contents($path, $new_yaml);
 
             if ($configSet['domain'] != 'dev') {
-                $path = JK_SITE_PATH() . 'config/websites/' . str_replace(':','_',$configSet['domain']) . '.yaml';
+                $path = JK_SITE_PATH() . 'config/websites/' . str_replace(':', '_', $configSet['domain']) . '.yaml';
                 unset($configSet['domain']);
                 $new_yaml = Yaml::dump($configSet, 5);
                 file_put_contents($path, $new_yaml);
@@ -225,8 +226,99 @@ class app extends baseCommand
         }
     }
 
+    public static function saveRoutes(){
+        FS::mkDir(JK_SITE_PATH() . "storage/private", 0777, true);
+        $methods=[];
+        if (!empty(Route::$instance)) {
+            $Route = Route::$instance;
+            if (!empty($Route->modules)) {
+                $modules = $Route->modules;
+                $vendorModules = $Route->modulesInVendor;
+                $modulesInPath = array_diff($modules, $vendorModules);
+                $modulesInVendorPath = array_diff($modules, $vendorModules);
+                $paths = [];
+                if (!empty($modulesInPath)) {
+                    foreach ($modulesInPath as $m) {
+                        $paths[$m] = JK_SITE_PATH() . 'vendor/joonika/module-' . $m . '/src/Controllers/*.php';
+                    }
+                }
+                if (!empty($modulesInVendorPath)) {
+                    foreach ($modulesInVendorPath as $m) {
+                        $paths[$m] = JK_SITE_PATH() . 'modules/' . $m . '/Controllers/*.php';
+                    }
+                }
+                $methods = [];
+                if (!empty($paths)) {
+                    foreach ($paths as $pk => $pv) {
+                        $found_files = glob($pv);
+                        if (!empty($found_files)) {
+                            foreach ($found_files as $f) {
+                                $getContent = file_get_contents($f);
+                                $token = token_get_all($getContent);
+                                $tokenCount = count($token);
+                                $classCount = 0;
+                                for ($i = 2; $i < $tokenCount; $i++) {
+                                    $methodAdded=[];
+                                    if ($token[$i - 2][0] === T_CLASS && $token[$i - 1][0] === T_WHITESPACE && $token[$i][0] === T_STRING) {
+                                        $namespace = $pk . '/' . $token[$i][1];
+                                        $classCount++;
+                                    }
+                                    if ($token[$i][0] === T_FUNCTION) {
+                                        for ($j = $i + 1; $j < count($token); $j++) {
+                                            if ($token[$j] === '{') {
+                                                $add = false;
+                                                if(!empty($token[$i + 2][1])){
+                                                    $methodName = $token[$i + 2][1];
+                                                    $methodType='post';
+                                                    if(!in_array($methodName,$methodAdded)){
+                                                        array_push($methodAdded,$methodName);
+                                                        if (substr($methodName, 0, strlen('post_')) == 'post_') {
+                                                            $add = true;
+                                                            $methodName=substr($methodName,strlen('post_'));
+                                                        } elseif (substr($methodName, 0, strlen('get_')) == 'get_') {
+                                                            $methodType='get';
+                                                            $add = true;
+                                                            $methodName=substr($methodName,strlen('get_'));
+                                                        }
+                                                        if ($add) {
+                                                            $methods[] = [
+                                                                "module" => $pk,
+                                                                "class" => $namespace,
+                                                                "method" => $methodName,
+                                                                "type" => $methodType,
+                                                                "path" => $pv,
+                                                            ];
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if(!empty($methods)){
+            $yaml=[];
+            foreach ($methods as $m){
+                $key=$m['class'].'/'.$m['type'].'_'.$m['method'];
+                $path=$m['path'];
+                $yaml[$key]= $path;
+            }
+            $new_yaml = Yaml::dump($yaml, 5);
+            $fileSave=JK_SITE_PATH().'storage/private/routes.yaml';
+            FS::createEmptyFile($fileSave);
+            file_put_contents($fileSave, $new_yaml);
+        }
+    }
     public function update()
     {
+//        self::saveRoutes();
+//        Route::$instance = new Route(JK_SITE_PATH(), 'dev');
+
         $this->io->title("The public folder is updating ...");
         $publicFileExist = FS::isExist(JK_SITE_PATH() . "public");
         if ($publicFileExist) {

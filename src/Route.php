@@ -72,6 +72,7 @@ class Route
     private static $JK_WEBSITE;
     private static $JK_MODULES;
     private static $JK_HOST;
+    private static $checkDbDuration=0;
     public static $JK_TITLE = '';
     private static $JK_ROOT_PATH_FROM_JOONIKA = DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR;
     public static $env = [];
@@ -494,7 +495,9 @@ class Route
                 if ($silentType) {
                     $this->database = $dataBaseInfo;
                 } else {
+                    $durationDbConnection=microtime(true);
                     $this->database = Database::connect($dataBaseInfo);
+                    self::$checkDbDuration+=(microtime(true)-$durationDbConnection);
                 }
             }
         } catch (\Exception $exception) {
@@ -617,7 +620,7 @@ class Route
             $translate = [];
             $userToken = false;
             if (!is_null($this->database) && $systemHasUsers) {
-                Translate::TR();
+                Translate::routeLanguage();
                 $expiredTokenAfter = !empty(self::$JK_WEBSITE['expiredTokenAfter']) ? self::$JK_WEBSITE['expiredTokenAfter'] : 172800;
                 $token = $this->requests->headers('token') ?? null;
 //                session_destroy();
@@ -698,10 +701,8 @@ class Route
                     }
                 }
             }
-//            jdie($_COOKIE);
             $middleWare = new kernel(self::JK_LOGINID(), $this);
             $middleWare->dispatch();
-
             $this->View = new \Joonika\View($this);
 
             if ($this->mainModule != "" && class_exists('Modules\\' . $this->mainModule . '\\Router')) {
@@ -728,17 +729,16 @@ class Route
 
         $routeExecutionTimeFinish = microtime(TRUE);
         $this->routeExecutionTime = $routeExecutionTimeFinish - $routeExecutionTimeStart;
-        $checkDbDuration = 0;
         if (!empty(Database::$instanceDuration)) {
             foreach (Database::$instanceDuration as $schema) {
                 if (!empty($schema)) {
                     foreach ($schema as $s) {
-                        @$checkDbDuration += $s;
+                        @self::$checkDbDuration += $s;
                     }
                 }
             }
         }
-        @header('DatabaseExecutionTime: ' . $checkDbDuration);
+        @header('DatabaseExecutionTime: ' . self::$checkDbDuration);
         @header('RouteExecutionTime: ' . $this->routeExecutionTime);
     }
 
