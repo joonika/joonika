@@ -373,15 +373,16 @@ class Route
         if ($routeConfig['domain'] == 'dev') {
             self::$JK_APP_DEBUG = true;
             $silentType = true;
+            $checkName= "dev";
         } else {
             $portCheck = in_array($_SERVER['SERVER_PORT'], [80, 443]) ? '' : ('_' . $_SERVER['SERVER_PORT']);
             $domainGet = substr($_SERVER['HTTP_HOST'], 0, strpos($_SERVER['HTTP_HOST'], ':'));
             $domainGet = !empty($domainGet) ? $domainGet : $_SERVER['HTTP_HOST'];
             $requiredYamlFile = self::JK_SITE_PATH() . 'config/websites/' . $domainGet . $portCheck . '.yaml';
+            $checkName= $domainGet . $portCheck;
         }
         if (file_exists($requiredYamlFile)) {
             try {
-                $checkName= $domainGet . $portCheck;
                 $yamlParseFileCache=\Joonika\helper\Cache::get($checkName);
                 if(!empty($yamlParseFileCache)){
                     $yamlParseFile = $yamlParseFileCache;
