@@ -315,7 +315,7 @@ class Route
             "defaultLang" => "en",
             "debug" => false,
             "theme" => "install",
-            "isApi" => true,
+            "isApi" => false,
             "languages" => [
                 "en" => self::routerConfigLanguageSchema()
             ],
