@@ -315,6 +315,7 @@ class Route
             "defaultLang" => "en",
             "debug" => false,
             "theme" => "install",
+            "isApi" => true,
             "languages" => [
                 "en" => self::routerConfigLanguageSchema()
             ],
@@ -380,7 +381,14 @@ class Route
         }
         if (file_exists($requiredYamlFile)) {
             try {
-                $yamlParseFile = yaml_parse_file($requiredYamlFile);
+                $checkName= $domainGet . $portCheck;
+                $yamlParseFileCache=\Joonika\helper\Cache::get($checkName);
+                if(!empty($yamlParseFileCache)){
+                    $yamlParseFile = $yamlParseFileCache;
+                }else{
+                    $yamlParseFile = yaml_parse_file($requiredYamlFile);
+                    \Joonika\helper\Cache::set($checkName,$yamlParseFile,30);
+                }
                 if (!empty($yamlParseFile['env'])) {
                     self::$env = $yamlParseFile['env'];
                 }
@@ -579,7 +587,9 @@ class Route
             self::$JK_LANGUAGES = $routeConfig['languages'];
         }
         self::$JK_THEME = self::$JK_WEBSITE['theme'] ?? null;
-
+        if(!empty($routeConfig['isApi'])){
+            $this->isApi = 1;
+        }
 
         if (isset($path[0]) && $path[0] != 'api') {
             $this->module = $path[0];

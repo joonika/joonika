@@ -201,6 +201,7 @@ class Controller
         $this->module = $Route->module;
 
         if ($_SERVER['SCRIPT_NAME'] != "dev") {
+
             $this->Route = $Route;
             self::$route = $Route;
             $this->View = $this->Route->View;
