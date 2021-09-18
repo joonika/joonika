@@ -6,5 +6,6 @@ public/
 composer.lock
 config/
 !config/SortMiddleWare.php
+!config/boot.yaml
 composer.phar
 joonika

@@ -5,6 +5,7 @@ namespace Joonika\dev;
 
 
 use Joonika\FS;
+use Joonika\helper\Arr;
 use Joonika\ManageTables;
 use Joonika\Route;
 use Joonika\Traits\Repository;
@@ -321,7 +322,23 @@ class app extends baseCommand
         $assetsFoot = [
         ];
         if (!empty($Route->modulesPath)) {
-            foreach ($Route->modulesPath as $module => $path) {
+            $modules=$Route->modulesPath;
+            $bootupYaml = JK_SITE_PATH()."config/bootup.yaml";
+            $bootupYamlFile=Yaml::parse(FS::fileGetContent($bootupYaml));
+            if(!empty($bootupYamlFile['sortAssets'])){
+                $modules=$bootupYamlFile['sortAssets'];
+                $modulesNotExist=array_diff($modules,$Route->modules);
+                if(!empty($modulesNotExist)){
+                    foreach ($modulesNotExist as $m){
+                        $key=array_search($m,$modules);
+                        unset($modules[$key]);
+                    }
+                    $modules=array_values($modules);
+                }
+                $modulesExist=array_diff($Route->modules,$modules);
+                $modules=array_values(array_merge($modules,$modulesExist));
+            }
+            foreach ($modules as $module) {
                 $bootClass = "\\Modules\\" . $module . "\src\\boot";
                 if (class_exists($bootClass)) {
                     $asssets_h = $bootClass::assets_head();
@@ -337,7 +354,6 @@ class app extends baseCommand
         }
         $saveBootAssetsPath = JK_SITE_PATH() . 'storage/private/bootAssets/';
         FS::removeDirectories($saveBootAssetsPath);
-
         if (!empty($assetsHead) || !empty($assetsFoot)) {
             FS::createDirectories($saveBootAssetsPath);
             $fileHead = '';

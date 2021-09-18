@@ -509,11 +509,11 @@ class FS
                 self::deleteDir($file);
             } else {
 
-                unlink($file);
+                @unlink($file);
             }
         }
         self::emptyDir($dir);
-        rmdir($dir);
+        @rmdir($dir);
     }
 
     public static function removeDirectories($dirPath, $selfRemove = true)
