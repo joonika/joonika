@@ -1516,8 +1516,6 @@ $(\'[data-popup="tooltip"]\').tooltip();
     
     ';
 
-    AstCtrl::ADD_HEADER_STYLES_FILES('/assets/datatable-1-10-24/datatables.css');
-    AstCtrl::ADD_FOOTER_JS_FILES('/assets/datatable-1-10-24/datatables.min.js');
     return $return;
 }
 
