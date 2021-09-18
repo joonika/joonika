@@ -373,15 +373,13 @@ class app extends baseCommand
     {
         if (!empty($array)) {
             foreach ($array as $arr) {
-                if (substr($arr, 0, 4) == 'http') {
-                    $baseName = basename($arr);
-                    if (substr($baseName, -4) == '.css') {
-                        $file .= '<link rel="stylesheet" href="' . $arr . '"/>';
-                    } elseif (substr($baseName, -3) == '.js') {
-                        $file .= '<script src="' . $arr . '"></script>';
-                    } else {
-                        $file .= $arr;
-                    }
+                $baseName = basename($arr);
+                if (substr($baseName, -4) == '.css') {
+                    $file .= '<link rel="stylesheet" href="' . $arr . '"/>';
+                } elseif (substr($baseName, -3) == '.js') {
+                    $file .= '<script src="' . $arr . '"></script>';
+                } else {
+                    $file .= $arr;
                 }
             }
         }
