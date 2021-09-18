@@ -39,6 +39,7 @@ class Route
     public $isApi = 0;
     public $jk_data = null;
     public $modulesInVendor = [];
+    public $modulesPath = [];
 
     //------------------
     public static $instance = null;
@@ -532,6 +533,7 @@ class Route
                 foreach ($scanned_directory as $elem) {
                     if (is_dir(self::JK_SITE_PATH() . 'modules' . self::DS() . $elem)) {
                         array_push($foundedModules, $elem);
+                        $this->modulesPath[$elem]=realpath(self::JK_SITE_PATH() . 'modules' . self::DS() . $elem);
                     }
                 }
             }
@@ -548,6 +550,7 @@ class Route
                         array_push($foundedModules, $moduleCheckName);
                         $autoload['Modules\\' . $moduleCheckName . '\\'][] = 'src/';
                         $loader->loadPSRDir($moduleInVendor, $autoload, true);
+                        $this->modulesPath[$moduleCheckName]=realpath($moduleInVendor);
                     } else {
                         if (self::JK_APP_DEBUG()) {
                             die("vendor " . $moduleCheckName . ' is duplicate');

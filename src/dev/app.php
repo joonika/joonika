@@ -313,8 +313,68 @@ class app extends baseCommand
         }
     }
 
+    private function bootClass()
+    {
+        $Route = Route::$instance;
+        $assetsHead = [
+        ];
+        $assetsFoot = [
+        ];
+        if (!empty($Route->modulesPath)) {
+            foreach ($Route->modulesPath as $module => $path) {
+                $bootClass = "\\Modules\\" . $module . "\src\\boot";
+                if (class_exists($bootClass)) {
+                    $asssets_h = $bootClass::assets_head();
+                    if (!empty($asssets_h)) {
+                        $assetsHead = array_merge($assetsHead, $asssets_h);
+                    }
+                    $asssets_f = $bootClass::assets_foot();
+                    if (!empty($asssets_f)) {
+                        $assetsFoot = array_merge($assetsFoot, $asssets_f);
+                    }
+                }
+            }
+        }
+        $saveBootAssetsPath = JK_SITE_PATH() . 'storage/private/bootAssets/';
+        FS::removeDirectories($saveBootAssetsPath);
+
+        if (!empty($assetsHead) || !empty($assetsFoot)) {
+            FS::createDirectories($saveBootAssetsPath);
+            $fileHead = '';
+            $fileFoot = '';
+            $this->stringFileFill($fileHead,$assetsHead);
+            $this->stringFileFill($fileFoot,$assetsFoot);
+            if(!empty($fileHead)){
+                FS::filePutContent($saveBootAssetsPath.'head.html',$fileHead);
+            }
+            if(!empty($fileFoot)){
+                FS::filePutContent($saveBootAssetsPath.'foot.html',$fileFoot);
+            }
+        }
+    }
+
+    private function stringFileFill(&$file,$array)
+    {
+        if (!empty($array)) {
+            foreach ($array as $arr) {
+                if (substr($arr, 0, 4) == 'http') {
+                    $baseName = basename($arr);
+                    if (substr($baseName, -4) == '.css') {
+                        $file .= '<link rel="stylesheet" href="' . $arr . '"/>';
+                    } elseif (substr($baseName, -3) == '.js') {
+                        $file .= '<script src="' . $arr . '"></script>';
+                    } else {
+                        $file .= $arr;
+                    }
+                }
+            }
+        }
+        return $file;
+    }
+
     public function update()
     {
+        $this->bootClass();
 //        self::saveRoutes();
 //        Route::$instance = new Route(JK_SITE_PATH(), 'dev');
 
