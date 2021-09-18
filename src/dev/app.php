@@ -314,45 +314,51 @@ class app extends baseCommand
         }
     }
 
-    private function bootClassFiles($modules = [],&$ignored=[])
+    private function bootClassFiles($modules = [], &$ignored = [])
     {
-        $assetsHead=[];
-        $assetsFoot=[];
+        $assetsHead = [];
+        $assetsFoot = [];
         if (!empty($modules)) {
             foreach ($modules as $module) {
                 $bootClass = "\\Modules\\" . $module . "\src\\boot";
                 if (class_exists($bootClass)) {
-                    $asssets_h = $bootClass::assets_head();
-                    if (!empty($asssets_h)) {
-                        $assetsHead = array_merge($assetsHead, $asssets_h);
+                    if (method_exists($bootClass, 'assets_head')) {
+                        $assets_h = $bootClass::assets_head();
+                        if (!empty($assets_h)) {
+                            $assetsHead = array_merge($assetsHead, $assets_h);
+                        }
                     }
-                    $asssets_f = $bootClass::assets_foot();
-                    if (!empty($asssets_f)) {
-                        $assetsFoot = array_merge($assetsFoot, $asssets_f);
+                    if (method_exists($bootClass, 'assets_foot')) {
+                        $assets_f = $bootClass::assets_foot();
+                        if (!empty($assets_f)) {
+                            $assetsFoot = array_merge($assetsFoot, $assets_f);
+                        }
                     }
-                    if(method_exists($bootClass,'modules_ignored')){
+
+                    if (method_exists($bootClass, 'modules_ignored')) {
                         $newIgnored = $bootClass::modules_ignored();
-                        $ignored[$module]=$newIgnored;
+                        $ignored[$module] = $newIgnored;
                     }
                 }
             }
         }
         return [
-            'assetsHead'=>$assetsHead,
-            'assetsFoot'=>$assetsFoot,
+            'assetsHead' => $assetsHead,
+            'assetsFoot' => $assetsFoot,
         ];
     }
-    private function bootClassRender($assetsHead,$assetsFoot,$suffix='')
+
+    private function bootClassRender($assetsHead, $assetsFoot, $suffix = '')
     {
         if (!empty($assetsHead) || !empty($assetsFoot)) {
             $saveBootAssetsPath = JK_SITE_PATH() . 'storage/private/bootAssets/';
             FS::createDirectories($saveBootAssetsPath);
             if (!empty(JK_LANGUAGES())) {
                 foreach (JK_LANGUAGES() as $lang => $langArray) {
-                    if(!empty($suffix)){
-                        $langSuffix=$lang.'_'.$suffix;
-                    }else{
-                        $langSuffix=$lang;
+                    if (!empty($suffix)) {
+                        $langSuffix = $lang . '_' . $suffix;
+                    } else {
+                        $langSuffix = $lang;
                     }
                     $fileHead = '';
                     $fileFoot = '';
@@ -397,25 +403,25 @@ class app extends baseCommand
             } else {
                 $modules = array_keys($modules);
             }
-            $getFiles=$this->bootClassFiles($modules,$ignored);
-            $assetsHead=!empty($getFiles['assetsHead'])?$getFiles['assetsHead']:'';
-            $assetsFoot=!empty($getFiles['assetsFoot'])?$getFiles['assetsFoot']:'';
+            $getFiles = $this->bootClassFiles($modules, $ignored);
+            $assetsHead = !empty($getFiles['assetsHead']) ? $getFiles['assetsHead'] : '';
+            $assetsFoot = !empty($getFiles['assetsFoot']) ? $getFiles['assetsFoot'] : '';
 
         }
         $saveBootAssetsPath = JK_SITE_PATH() . 'storage/private/bootAssets/';
         FS::removeDirectories($saveBootAssetsPath);
-        $this->bootClassRender($assetsHead,$assetsFoot);
-        if(!empty($ignored)){
-            foreach ($ignored as $im=>$ms){
-                $array_diff=array_diff($modules,$ms);
-                if(!empty($array_diff)){
-                    $getFiles=$this->bootClassFiles($array_diff,$ignored);
-                }else{
-                    $getFiles=$this->bootClassFiles($modules,$ignored);
+        $this->bootClassRender($assetsHead, $assetsFoot);
+        if (!empty($ignored)) {
+            foreach ($ignored as $im => $ms) {
+                $array_diff = array_diff($modules, $ms);
+                if (!empty($array_diff)) {
+                    $getFiles = $this->bootClassFiles($array_diff, $ignored);
+                } else {
+                    $getFiles = $this->bootClassFiles($modules, $ignored);
                 }
-                $assetsHead=!empty($getFiles['assetsHead'])?$getFiles['assetsHead']:'';
-                $assetsFoot=!empty($getFiles['assetsFoot'])?$getFiles['assetsFoot']:'';
-                $this->bootClassRender($assetsHead,$assetsFoot,$im);
+                $assetsHead = !empty($getFiles['assetsHead']) ? $getFiles['assetsHead'] : '';
+                $assetsFoot = !empty($getFiles['assetsFoot']) ? $getFiles['assetsFoot'] : '';
+                $this->bootClassRender($assetsHead, $assetsFoot, $im);
             }
         }
     }
@@ -424,15 +430,15 @@ class app extends baseCommand
     {
         if (!empty($array)) {
             foreach ($array as $arr) {
-                $lang=$langArray['slug'];
-                $direction=$langArray['direction'];
+                $lang = $langArray['slug'];
+                $direction = $langArray['direction'];
                 $arr = str_replace('{{lang}}', $lang, $arr);
                 $arr = str_replace('{{direction}}', $direction, $arr);
-                $arr = str_replace('{{dirDash}}', '-'.$direction, $arr);
+                $arr = str_replace('{{dirDash}}', '-' . $direction, $arr);
                 preg_match('/^{%dirCheck=(.*)%}/', $arr, $findDirection);
-                if(!empty($findDirection[1])){
-                    $arr = str_replace('{%dirCheck='.$findDirection[1].'%}', '', $arr);
-                    if($findDirection[1]!=$direction){
+                if (!empty($findDirection[1])) {
+                    $arr = str_replace('{%dirCheck=' . $findDirection[1] . '%}', '', $arr);
+                    if ($findDirection[1] != $direction) {
                         continue;
                     }
                 }
