@@ -2325,7 +2325,7 @@ function tab_menus($menus, $link, $pathCheck = 1, $in = null, $endLink = '', $li
                     $icon = !empty($menu['icon']) ? $menu['icon'] : '';
                     ?>
                     <li class="nav-item <?= $liClass ?>">
-                        <a class="nav-link px-2 <?php if ($active == $linkCheck) { ?>active<?php } ?> <?= $disabled ?>"
+                        <a class="nav-link px-2 navigationLink <?php if ($active == $linkCheck) { ?>active<?php } ?> <?= $disabled ?>"
                             <?= $onClick ?> <?= $disabled ?>
 
                            href="<?php echo $linkShow; ?>" <?= $linkToggle ?>
