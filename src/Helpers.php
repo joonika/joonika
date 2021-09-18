@@ -1280,7 +1280,6 @@ for (instance in CKEDITOR.instances) {
                  });
 ';
     }
-    modules_assets_to_ctrl('cp/assets/js/jquery-validation/jquery.validate.min.js');
     return $return;
 }
 
