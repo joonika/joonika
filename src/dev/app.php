@@ -314,30 +314,11 @@ class app extends baseCommand
         }
     }
 
-    private function bootClass()
+    private function bootClassFiles($modules = [],&$ignored=[])
     {
-        $Route = Route::$instance;
-        $assetsHead = [
-        ];
-        $assetsFoot = [
-        ];
-        if (!empty($Route->modulesPath)) {
-            $modules=$Route->modulesPath;
-            $bootupYaml = JK_SITE_PATH()."config/bootup.yaml";
-            $bootupYamlFile=Yaml::parse(FS::fileGetContent($bootupYaml));
-            if(!empty($bootupYamlFile['sortAssets'])){
-                $modules=$bootupYamlFile['sortAssets'];
-                $modulesNotExist=array_diff($modules,$Route->modules);
-                if(!empty($modulesNotExist)){
-                    foreach ($modulesNotExist as $m){
-                        $key=array_search($m,$modules);
-                        unset($modules[$key]);
-                    }
-                    $modules=array_values($modules);
-                }
-                $modulesExist=array_diff($Route->modules,$modules);
-                $modules=array_values(array_merge($modules,$modulesExist));
-            }
+        $assetsHead=[];
+        $assetsFoot=[];
+        if (!empty($modules)) {
             foreach ($modules as $module) {
                 $bootClass = "\\Modules\\" . $module . "\src\\boot";
                 if (class_exists($bootClass)) {
@@ -349,35 +330,117 @@ class app extends baseCommand
                     if (!empty($asssets_f)) {
                         $assetsFoot = array_merge($assetsFoot, $asssets_f);
                     }
+                    if(method_exists($bootClass,'modules_ignored')){
+                        $newIgnored = $bootClass::modules_ignored();
+                        $ignored[$module]=$newIgnored;
+                    }
                 }
             }
         }
+        return [
+            'assetsHead'=>$assetsHead,
+            'assetsFoot'=>$assetsFoot,
+        ];
+    }
+    private function bootClassRender($assetsHead,$assetsFoot,$suffix='')
+    {
+        if (!empty($assetsHead) || !empty($assetsFoot)) {
+            $saveBootAssetsPath = JK_SITE_PATH() . 'storage/private/bootAssets/';
+            FS::createDirectories($saveBootAssetsPath);
+            if (!empty(JK_LANGUAGES())) {
+                foreach (JK_LANGUAGES() as $lang => $langArray) {
+                    if(!empty($suffix)){
+                        $langSuffix=$lang.'_'.$suffix;
+                    }else{
+                        $langSuffix=$lang;
+                    }
+                    $fileHead = '';
+                    $fileFoot = '';
+                    $this->stringFileFill($fileHead, $assetsHead, $langArray);
+                    $this->stringFileFill($fileFoot, $assetsFoot, $langArray);
+                    if (!empty($fileHead)) {
+                        FS::filePutContent($saveBootAssetsPath . 'head_' . $langSuffix . '.html', $fileHead);
+                    }
+                    if (!empty($fileFoot)) {
+                        FS::filePutContent($saveBootAssetsPath . 'foot_' . $langSuffix . '.html', $fileFoot);
+                    }
+                }
+            }
+        }
+
+    }
+
+    private function bootClass()
+    {
+        $Route = Route::$instance;
+        $assetsHead = [
+        ];
+        $assetsFoot = [
+        ];
+        $ignored = [];
+        if (!empty($Route->modulesPath)) {
+            $modules = $Route->modulesPath;
+            $bootupYaml = JK_SITE_PATH() . "config/boot.yaml";
+            $bootupYamlFile = Yaml::parse(FS::fileGetContent($bootupYaml));
+            if (!empty($bootupYamlFile['sortAssets'])) {
+                $modules = $bootupYamlFile['sortAssets'];
+                $modulesNotExist = array_diff($modules, $Route->modules);
+                if (!empty($modulesNotExist)) {
+                    foreach ($modulesNotExist as $m) {
+                        $key = array_search($m, $modules);
+                        unset($modules[$key]);
+                    }
+                    $modules = array_values($modules);
+                }
+                $modulesExist = array_diff($Route->modules, $modules);
+                $modules = array_values(array_merge($modules, $modulesExist));
+            } else {
+                $modules = array_keys($modules);
+            }
+            $getFiles=$this->bootClassFiles($modules,$ignored);
+            $assetsHead=!empty($getFiles['assetsHead'])?$getFiles['assetsHead']:'';
+            $assetsFoot=!empty($getFiles['assetsFoot'])?$getFiles['assetsFoot']:'';
+
+        }
         $saveBootAssetsPath = JK_SITE_PATH() . 'storage/private/bootAssets/';
         FS::removeDirectories($saveBootAssetsPath);
-        if (!empty($assetsHead) || !empty($assetsFoot)) {
-            FS::createDirectories($saveBootAssetsPath);
-            $fileHead = '';
-            $fileFoot = '';
-            $this->stringFileFill($fileHead,$assetsHead);
-            $this->stringFileFill($fileFoot,$assetsFoot);
-            if(!empty($fileHead)){
-                FS::filePutContent($saveBootAssetsPath.'head.html',$fileHead);
-            }
-            if(!empty($fileFoot)){
-                FS::filePutContent($saveBootAssetsPath.'foot.html',$fileFoot);
+        $this->bootClassRender($assetsHead,$assetsFoot);
+        if(!empty($ignored)){
+            foreach ($ignored as $im=>$ms){
+                $array_diff=array_diff($modules,$ms);
+                if(!empty($array_diff)){
+                    $getFiles=$this->bootClassFiles($array_diff,$ignored);
+                }else{
+                    $getFiles=$this->bootClassFiles($modules,$ignored);
+                }
+                $assetsHead=!empty($getFiles['assetsHead'])?$getFiles['assetsHead']:'';
+                $assetsFoot=!empty($getFiles['assetsFoot'])?$getFiles['assetsFoot']:'';
+                $this->bootClassRender($assetsHead,$assetsFoot,$im);
             }
         }
     }
 
-    private function stringFileFill(&$file,$array)
+    private function stringFileFill(&$file, $array, $langArray = [])
     {
         if (!empty($array)) {
             foreach ($array as $arr) {
-                $baseName = basename($arr);
+                $lang=$langArray['slug'];
+                $direction=$langArray['direction'];
+                $arr = str_replace('{{lang}}', $lang, $arr);
+                $arr = str_replace('{{direction}}', $direction, $arr);
+                $arr = str_replace('{{dirDash}}', '-'.$direction, $arr);
+                preg_match('/^{%dirCheck=(.*)%}/', $arr, $findDirection);
+                if(!empty($findDirection[1])){
+                    $arr = str_replace('{%dirCheck='.$findDirection[1].'%}', '', $arr);
+                    if($findDirection[1]!=$direction){
+                        continue;
+                    }
+                }
+                $baseName = strtok(basename($arr), '?');
                 if (substr($baseName, -4) == '.css') {
-                    $file .= '<link rel="stylesheet" href="' . $arr . '"/>';
+                    $file .= "\t" . '<link rel="stylesheet" href="' . $arr . '"/>' . "\r\n";
                 } elseif (substr($baseName, -3) == '.js') {
-                    $file .= '<script src="' . $arr . '"></script>';
+                    $file .= '<script src="' . $arr . '"></script>' . "\r\n";
                 } else {
                     $file .= $arr;
                 }
