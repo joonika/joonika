@@ -40,22 +40,28 @@ if (!function_exists('dd')) {
     }
 }
 if (!function_exists('jdie')) {
-    function jdie($inp, $die = true)
+    function jdie($inp, $die = true,$loginId=0)
     {
-        if (isset($inp)) {
-            if (is_array($inp) or is_object($inp)) {
-                echo '<pre class="text-left text-break  ltr" dir="ltr">';
-                print_r($inp);
-//                var_dump($inp);
-                echo '</pre>';
-            } else {
-                echo '<pre>' . $inp . '</pre><br>';
-            }
-        } else {
-            echo "variable {$inp} is not set or null";
+        $continue=true;
+        if(!empty($loginId) && $loginId!=JK_LOGINID()){
+            $continue=false;
         }
-        if ($die) {
-            die();
+        if($continue){
+            if (isset($inp)) {
+                if (is_array($inp) or is_object($inp)) {
+                    echo '<pre class="text-left text-break  ltr" dir="ltr">';
+                    print_r($inp);
+//                var_dump($inp);
+                    echo '</pre>';
+                } else {
+                    echo '<pre>' . $inp . '</pre><br>';
+                }
+            } else {
+                echo "variable {$inp} is not set or null";
+            }
+            if ($die) {
+                die();
+            }
         }
     }
 }
