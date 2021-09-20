@@ -318,7 +318,6 @@ class app extends baseCommand
     {
 //        self::saveRoutes();
 //        Route::$instance = new Route(JK_SITE_PATH(), 'dev');
-
         $this->io->title("The public folder is updating ...");
         $publicFileExist = FS::isExist(JK_SITE_PATH() . "public");
         if ($publicFileExist) {
