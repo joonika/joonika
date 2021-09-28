@@ -55,8 +55,10 @@ class Redirect
 
             $path = JK_SITE_PATH() . "themes" . DS() . $activeTheme . DS() . 'partials' . DS() . 'pages' . DS() . 'errors' . DS() . $code . '.php';
             $path2 = JK_SITE_PATH() . "themes" . DS() . $activeTheme . DS() . 'Views' . DS() . 'code_' . $code . '.twig';
-            if (FS::isExistIsFile($path) || FS::isExistIsFile($path2)) {
+            if (FS::isExistIsFile($path)) {
                 include_once $path;
+            }elseif(FS::isExistIsFile($path2)){
+                include_once $path2;
             } else {
                 self::defaultCodeTemplate($code, $msg, $extraCode);
             }
