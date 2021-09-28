@@ -56,7 +56,7 @@ class AutomaticRouter
             }
             $this->searchInModules();
             if (!$this->Route->found) {
-                if (!is_null($this->Route->database)) {
+                if (!$this->Route->isApi && !is_null($this->Route->database)) {
                     $this->searchInData();
                 }
                 if (JK_THEME()) {
