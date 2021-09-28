@@ -58,7 +58,8 @@ class Redirect
             if (FS::isExistIsFile($path)) {
                 include_once $path;
             }elseif(FS::isExistIsFile($path2)){
-                include_once $path2;
+                $Route->found=$path2;
+                $Route->View->render();
             } else {
                 self::defaultCodeTemplate($code, $msg, $extraCode);
             }
