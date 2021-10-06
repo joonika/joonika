@@ -101,6 +101,10 @@ class db extends baseCommand
                 "title" => "restore translate table from file",
                 "arguments" => ["name"]
             ],
+            "db:ideUpdate" => [
+                "title" => "update tables and columns for use in ide",
+                "arguments" => ["name"]
+            ],
         ];
     }
 
@@ -700,7 +704,7 @@ class db extends baseCommand
 
                     $writer = new Xlsx($spreadsheet);
 
-                        $filename =  'translateApiExport.xlsx';
+                    $filename =  'translateApiExport.xlsx';
 
                     $folder = 'files/tmp';
                     if (!FS::isDir(JK_SITE_PATH() . 'storage' . DS() . $folder)) {
@@ -865,6 +869,20 @@ class db extends baseCommand
         } else {
             $this->writeError('translate table not exist');
         }
+    }
+
+    public function ideUpdate()
+    {
+
+        $selectedDb = $this->dbSelect();
+        $name = $this->checkInputArguments('name');
+        $tableList = self::getTables($selectedDb['db']);
+        if(!empty($tableList)){
+            $tableListString="'".implode("','",$tableList)."'";
+        }
+        $metaFile=file_get_contents(__DIR__.'/temp/.phpstorm.meta.php');
+        $metaFile=str_replace('$tablesNameString',$tableListString,$metaFile);
+        file_put_contents(JK_SITE_PATH().'.phpstorm.meta.php',$metaFile);
     }
 
 }

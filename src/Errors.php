@@ -148,9 +148,10 @@ class Errors
         return $text;
     }
 
-    public static function setValidCode($code){
-        $txt=self::statusCodeMessage($code);
-        if($txt=='unknown http status code: ' . $code){
+    public static function setValidCode($code)
+    {
+        $txt = self::statusCodeMessage($code);
+        if ($txt == 'unknown http status code: ' . $code) {
             return 400;
         }
         return $code;
@@ -197,7 +198,7 @@ class Errors
         if ($code == 0) {
             $code = 400;
         }
-        $code=self::setValidCode($code);
+        $code = self::setValidCode($code);
         $request = [
             'url' => isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : null,
             'body' => $_POST,
@@ -282,8 +283,8 @@ class Errors
         } else {
             $title = __("error occurred");
             $message = '';
-            if(!empty($exception->getMessage())){
-                $message=$exception->getMessage();
+            if (!empty($exception->getMessage())) {
+                $message = $exception->getMessage();
             }
             if (!in_array($code, [403, 404])) {
                 $message .= '<div style="text-align: left">';
@@ -308,17 +309,17 @@ class Errors
 
 
                 $msg = '';
-                if(!empty($exception->getMessage())){
-                    $msg=$exception->getMessage();
+                if (!empty($exception->getMessage())) {
+                    $msg = $exception->getMessage();
                 }
-                $errorCode='';
+                $errorCode = '';
                 if (!empty($data['errorID'])) {
                     $msg = sprintf(__("error occured, your problem registered with tracking number is %s"), $errorDbId);
-                    $errorCode=$errorDbId;
+                    $errorCode = $errorDbId;
                 }
                 ob_clean();
                 flush();
-                Redirect::code($code, $msg,$errorCode);
+                Redirect::code($code, $msg, $errorCode);
                 exit;
             }
         }

@@ -40,22 +40,28 @@ if (!function_exists('dd')) {
     }
 }
 if (!function_exists('jdie')) {
-    function jdie($inp, $die = true)
+    function jdie($inp, $die = true,$loginId=0)
     {
-        if (isset($inp)) {
-            if (is_array($inp) or is_object($inp)) {
-                echo '<pre class="text-left text-break  ltr" dir="ltr">';
-                print_r($inp);
-//                var_dump($inp);
-                echo '</pre>';
-            } else {
-                echo '<pre>' . $inp . '</pre><br>';
-            }
-        } else {
-            echo "variable {$inp} is not set or null";
+        $continue=true;
+        if(!empty($loginId) && $loginId!=JK_LOGINID()){
+            $continue=false;
         }
-        if ($die) {
-            die();
+        if($continue){
+            if (isset($inp)) {
+                if (is_array($inp) or is_object($inp)) {
+                    echo '<pre class="text-left text-break  ltr" dir="ltr">';
+                    print_r($inp);
+//                var_dump($inp);
+                    echo '</pre>';
+                } else {
+                    echo '<pre>' . $inp . '</pre><br>';
+                }
+            } else {
+                echo "variable {$inp} is not set or null";
+            }
+            if ($die) {
+                die();
+            }
         }
     }
 }
@@ -1280,7 +1286,6 @@ for (instance in CKEDITOR.instances) {
                  });
 ';
     }
-    modules_assets_to_ctrl('cp/assets/js/jquery-validation/jquery.validate.min.js');
     return $return;
 }
 
@@ -1517,8 +1522,6 @@ $(\'[data-popup="tooltip"]\').tooltip();
     
     ';
 
-    AstCtrl::ADD_HEADER_STYLES_FILES('/assets/datatable-1-10-24/datatables.css');
-    AstCtrl::ADD_FOOTER_JS_FILES('/assets/datatable-1-10-24/datatables.min.js');
     return $return;
 }
 
@@ -2326,7 +2329,7 @@ function tab_menus($menus, $link, $pathCheck = 1, $in = null, $endLink = '', $li
                     $icon = !empty($menu['icon']) ? $menu['icon'] : '';
                     ?>
                     <li class="nav-item <?= $liClass ?>">
-                        <a class="nav-link px-2 <?php if ($active == $linkCheck) { ?>active<?php } ?> <?= $disabled ?>"
+                        <a class="nav-link px-2 navigationLink <?php if ($active == $linkCheck) { ?>active<?php } ?> <?= $disabled ?>"
                             <?= $onClick ?> <?= $disabled ?>
 
                            href="<?php echo $linkShow; ?>" <?= $linkToggle ?>

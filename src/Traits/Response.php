@@ -19,7 +19,7 @@ trait Response
     protected $success = false;
     protected $data = [];
 
-    public function setResponseSuccess($data = [], $success = true, $onlyData = false,$errors=[])
+    public function setResponseSuccess($data = [], $success = true, $onlyData = false, $errors = [])
     {
         $this->status = 200;
         $this->success = $success;
@@ -29,10 +29,11 @@ trait Response
             "success" => true,
             "data" => $data,
         ];
-        if(!empty($errors)){
-            $this->output['errors']=$errors;
+        if (!empty($errors)) {
+            $this->output['errors'] = $errors;
         }
         $this->view_render(false);
+        return $this->output;
     }
 
     public function setResponseError($error, $exit = true, $code = null)
@@ -53,16 +54,23 @@ trait Response
             $this->errors = array_merge($this->errors, [$alertStructure]);
 
         } else {
-            if(!empty($error[0]['message'])){
-                foreach ($error as $er){
+            if (!empty($error[0]['message'])) {
+                foreach ($error as $er) {
                     $this->errors = array_merge($this->errors, $er);
 
                 }
-            }elseif (!empty($error)) {
+            } elseif (!empty($error)) {
                 $this->errors = array_merge($this->errors, [["message" => $error]]);
             }
         }
+
         if ($exit) {
+            if ($this->Route->silentType) {
+                return [
+                    "success" => false,
+                    "errors" => $this->errors
+                ];
+            }
             exit();
         }
     }
@@ -71,17 +79,19 @@ trait Response
     {
         $statusMessageCode = Errors::statusCodeMessage($this->status);
         if ($this->export == "json" && !empty($this->Route->isApi)) {
-            if(!$this->foundMethod && !empty($this->output['data']['success'])){
-                $this->success=false;
-                $this->status=404;
-                $this->errors=[
-                    "message"=>__("not found")
+            if (!$this->foundMethod && !empty($this->output['data']['success'])) {
+                $this->success = false;
+                $this->status = 404;
+                $this->errors = [
+                    "message" => __("not found")
                 ];
                 $statusMessageCode = Errors::statusCodeMessage($this->status);
             }
-            $this->success=!empty($this->output['success'])?$this->output['success']:$this->success;
-            header('HTTP/1.1 ' . $this->status . ' ' . $statusMessageCode);
-            header('Content-Type: ' . $this->header);
+            $this->success = !empty($this->output['success']) ? $this->output['success'] : $this->success;
+            if (!$this->Route->silentType) {
+                @header('HTTP/1.1 ' . $this->status . ' ' . $statusMessageCode);
+                @header('Content-Type: ' . $this->header);
+            }
             $this->output['success'] = $this->success;
             if ($this->success) {
                 $this->output['data'] = $this->data;

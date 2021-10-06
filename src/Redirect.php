@@ -54,8 +54,12 @@ class Redirect
         } elseif ($activeTheme && empty($Route->mainModule)) {
 
             $path = JK_SITE_PATH() . "themes" . DS() . $activeTheme . DS() . 'partials' . DS() . 'pages' . DS() . 'errors' . DS() . $code . '.php';
+            $path2 = JK_SITE_PATH() . "themes" . DS() . $activeTheme . DS() . 'Views' . DS() . 'code_' . $code . '.twig';
             if (FS::isExistIsFile($path)) {
                 include_once $path;
+            }elseif(FS::isExistIsFile($path2)){
+                $Route->found=$path2;
+                $Route->View->render();
             } else {
                 self::defaultCodeTemplate($code, $msg, $extraCode);
             }

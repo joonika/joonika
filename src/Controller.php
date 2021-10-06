@@ -165,6 +165,9 @@ class Controller
                 }
                 $this->setResponseError($this->errors, true, $this->status);
             }
+            if ($this->Route->silentType) {
+                return $args;
+            }
             exit();
         }
         if ($otherModule && $path != null) {
@@ -195,15 +198,15 @@ class Controller
 
     public function __construct(Route $Route = null, $sc = false)
     {
+        $Route = is_null($Route) ? Route::$instance : $Route;
+        $this->Route = $Route;
+        self::$route = $Route;
         $this->timeStart = microtime(true);
 
         $this->userId = JK_LOGINID();
         $this->module = $Route->module;
+        if (!$Route->silentType) {
 
-        if ($_SERVER['SCRIPT_NAME'] != "dev") {
-
-            $this->Route = $Route;
-            self::$route = $Route;
             $this->View = $this->Route->View;
             self::$DB = $this->Route->database;
             $this->database = self::$DB;
@@ -249,6 +252,9 @@ class Controller
     public function __destruct()
     {
         $this->prepareOutput();
+        if ($this->Route->silentType) {
+            return $this->output;
+        }
         if ($this->export == 'json' && !empty($this->Route->isApi)) {
             echo json_encode($this->output, 256 | 128);
             $this->Route->ViewRender = false;
@@ -300,7 +306,7 @@ class Controller
                 if ($return) {
                     $alerts[] = $alert;
                 } else {
-                    $this->setResponseError($alert, false);
+                    return $this->setResponseError($alert, false);
                 }
             }
             if ($return) {
@@ -320,7 +326,7 @@ class Controller
                         $request[$k] = $this->arrayBlacklistUnset($request[$k], $v);
                     }
                 } else {
-                    if(is_array($request) && array_key_exists($v,$request)) {
+                    if (is_array($request) && array_key_exists($v, $request)) {
                         unset($request[$v]);
                     } elseif (is_array($request)) {
                         foreach ($request as $rvK => $rv) {

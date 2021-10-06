@@ -39,6 +39,8 @@ class Route
     public $isApi = 0;
     public $jk_data = null;
     public $modulesInVendor = [];
+    public $modulesPath = [];
+    public $silentType = false;
 
     //------------------
     public static $instance = null;
@@ -72,7 +74,7 @@ class Route
     private static $JK_WEBSITE;
     private static $JK_MODULES;
     private static $JK_HOST;
-    private static $checkDbDuration=0;
+    private static $checkDbDuration = 0;
     public static $JK_TITLE = '';
     private static $JK_ROOT_PATH_FROM_JOONIKA = DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR;
     public static $env = [];
@@ -373,21 +375,22 @@ class Route
         if ($routeConfig['domain'] == 'dev') {
             self::$JK_APP_DEBUG = true;
             $silentType = true;
+            $checkName = "dev";
         } else {
             $portCheck = in_array($_SERVER['SERVER_PORT'], [80, 443]) ? '' : ('_' . $_SERVER['SERVER_PORT']);
             $domainGet = substr($_SERVER['HTTP_HOST'], 0, strpos($_SERVER['HTTP_HOST'], ':'));
             $domainGet = !empty($domainGet) ? $domainGet : $_SERVER['HTTP_HOST'];
             $requiredYamlFile = self::JK_SITE_PATH() . 'config/websites/' . $domainGet . $portCheck . '.yaml';
+            $checkName = $domainGet . $portCheck;
         }
         if (file_exists($requiredYamlFile)) {
             try {
-                $checkName= $domainGet . $portCheck;
-                $yamlParseFileCache=\Joonika\helper\Cache::get($checkName);
-                if(!empty($yamlParseFileCache)){
+                $yamlParseFileCache = \Joonika\helper\Cache::get($checkName);
+                if (!empty($yamlParseFileCache)) {
                     $yamlParseFile = $yamlParseFileCache;
-                }else{
+                } else {
                     $yamlParseFile = yaml_parse_file($requiredYamlFile);
-                    \Joonika\helper\Cache::set($checkName,$yamlParseFile,30);
+                    \Joonika\helper\Cache::set($checkName, $yamlParseFile, 30);
                 }
                 if (!empty($yamlParseFile['env'])) {
                     self::$env = $yamlParseFile['env'];
@@ -444,7 +447,7 @@ class Route
         } else {
             Errors::errorHandler(0, "config file has not correctly configs.", __FILE__, __LINE__);
         }
-
+        $this->silentType = $silentType;
         $this->setErrorReporting($routeConfig['debug'], E_ALL);
         self::$JK_URI = isset($_SERVER['REQUEST_URI']) ? $this->removeVariblesOfQueryString(ltrim($_SERVER['REQUEST_URI'], '/')) : null;
         self::$JK_URL = self::$JK_DOMAIN . (!empty(self::$JK_URI) ? ('/' . self::$JK_URI) : '');
@@ -503,9 +506,9 @@ class Route
                 if ($silentType) {
                     $this->database = $dataBaseInfo;
                 } else {
-                    $durationDbConnection=microtime(true);
+                    $durationDbConnection = microtime(true);
                     $this->database = Database::connect($dataBaseInfo);
-                    self::$checkDbDuration+=(microtime(true)-$durationDbConnection);
+                    self::$checkDbDuration += (microtime(true) - $durationDbConnection);
                 }
             }
         } catch (\Exception $exception) {
@@ -531,6 +534,7 @@ class Route
                 foreach ($scanned_directory as $elem) {
                     if (is_dir(self::JK_SITE_PATH() . 'modules' . self::DS() . $elem)) {
                         array_push($foundedModules, $elem);
+                        $this->modulesPath[$elem] = realpath(self::JK_SITE_PATH() . 'modules' . self::DS() . $elem);
                     }
                 }
             }
@@ -547,6 +551,7 @@ class Route
                         array_push($foundedModules, $moduleCheckName);
                         $autoload['Modules\\' . $moduleCheckName . '\\'][] = 'src/';
                         $loader->loadPSRDir($moduleInVendor, $autoload, true);
+                        $this->modulesPath[$moduleCheckName] = realpath($moduleInVendor);
                     } else {
                         if (self::JK_APP_DEBUG()) {
                             die("vendor " . $moduleCheckName . ' is duplicate');
@@ -587,7 +592,7 @@ class Route
             self::$JK_LANGUAGES = $routeConfig['languages'];
         }
         self::$JK_THEME = self::$JK_WEBSITE['theme'] ?? null;
-        if(!empty($routeConfig['isApi'])){
+        if (!empty($routeConfig['isApi'])) {
             $this->isApi = 1;
         }
 
@@ -1068,7 +1073,7 @@ class Route
 
     protected function getQueryString($url)
     {
-        $outout='';
+        $outout = '';
         if ($url != '') {
             $parts = explode("?", $url);
             if (isset($parts[1])) {
