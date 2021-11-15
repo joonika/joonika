@@ -20,6 +20,7 @@ class events
     public $returnErrors = [];
     public $event;
     public $return = false;
+    public $success = true;
 
 
     public function __construct($action = null, $data = null, $return = null)
@@ -83,6 +84,7 @@ class events
                 }
             }
         }
+        return $this->fire();
     }
 
     public function after($after)
@@ -117,7 +119,8 @@ class events
 
     public function __destruct()
     {
-        $this->fire();
+//         $this->fire();
+        return $this;
     }
 
     final  private function fire()
@@ -225,11 +228,13 @@ class events
         }
         if ($this->return) {
             if (checkArraySize($this->returnErrors)) {
+                $this->success=false;
                 return [
                     'success' => false,
                     'errors' => $this->returnErrors,
                 ];
             } else {
+                $this->success=true;
                 return [
                     'success' => true
                 ];

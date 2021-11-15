@@ -13,6 +13,8 @@ abstract class boom
     protected $id;
     protected $isApi;
     protected $return = false;
+    public $success = true;
+    public $errors = [];
 
     abstract public static function define();
 
@@ -32,12 +34,13 @@ abstract class boom
             "errors" => null,
             "lastErrorDate" => null,
         ], ['id' => $this->id]);
-        $this->runIfSuccessful();
+        return $this->runIfSuccessful();
     }
 
     public function runIfSuccessful()
     {
-
+        $this->success=true;
+        return true;
     }
 
     public function failed($message = '')
@@ -45,30 +48,31 @@ abstract class boom
         Database::update("jk_listeners_queue", [
             "result" => '0',
         ], ['id' => $this->id]);
-        $this->runIfFailed($message);
+        return $this->runIfFailed($message);
     }
 
     public function runIfFailed($message = '')
     {
         $message = !empty($message) ? $message : __("failed");
-        if ($this->isApi) {
-            header('HTTP/1.1 ' . 400);
-            header('Content-Type: application/json');
-            echo json_encode([
-                'success' => false,
-                'errors' => [[
-                    'message' => $message,
-                ]],
-            ], 256 | 128);
-        } else {
-            echo alertDanger($message);
-        }
+        $this->success=false;
         if ($this->return) {
             return [
                 'code' => 400,
                 'message' => $message
             ];
         } else {
+            if ($this->isApi) {
+                header('HTTP/1.1 ' . 400);
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => false,
+                    'errors' => [[
+                        'message' => $message,
+                    ]],
+                ], 256 | 128);
+            } else {
+                echo alertDanger($message);
+            }
             exit();
         }
     }

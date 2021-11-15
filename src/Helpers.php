@@ -3067,7 +3067,8 @@ if (!function_exists('databaseInfo')) {
 if (!function_exists('boom')) {
     function boom($action, $data = null, $return = false)
     {
-        return new \Joonika\boom\events($action, $data, $return);
+        $boom=new \Joonika\boom\events($action, $data, $return);
+        return $boom;
     }
 }
 
