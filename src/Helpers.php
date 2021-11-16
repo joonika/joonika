@@ -1278,7 +1278,7 @@ for (instance in CKEDITOR.instances) {
             ' . $option['success_response_after'] . '
                                         submitBtnFind.html(oldTxt).prop("disabled",false);
         }, error: function () {
-                                            submitBtnFind.text(oldTxt).prop("disabled",false);
+                                            submitBtnFind.html(oldTxt).prop("disabled",false);
         ' . $error_response . '
 }
     });
