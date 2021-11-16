@@ -40,13 +40,13 @@ if (!function_exists('dd')) {
     }
 }
 if (!function_exists('jdie')) {
-    function jdie($inp, $die = true,$loginId=0)
+    function jdie($inp, $die = true, $loginId = 0)
     {
-        $continue=true;
-        if(!empty($loginId) && $loginId!=JK_LOGINID()){
-            $continue=false;
+        $continue = true;
+        if (!empty($loginId) && $loginId != JK_LOGINID()) {
+            $continue = false;
         }
-        if($continue){
+        if ($continue) {
             if (isset($inp)) {
                 if (is_array($inp) or is_object($inp)) {
                     echo '<pre class="text-left text-break  ltr" dir="ltr">';
@@ -795,32 +795,42 @@ if (empty($isAjax)) {
     <div class="center" style=" direction: <?= $direction ?>;">
         <div>
             <?php
-            $codeView = $code;
-            if (!empty($extraCode)) {
-                $codeView = $codeView . '-' . $extraCode;
+            $codeView = '';
+            if ($code != 200) {
+                $codeView = $code;
+                if (!empty($extraCode)) {
+                    $codeView = $codeView . '-' . $extraCode;
+                }
+                $codeView = ' (' . sprintf(__("error code: %s"), $codeView) . ')';
             }
             ?>
-            <div class="title"><?= $title ?> (<?= sprintf(__("error code: %s"), $codeView) ?>)</div>
+            <div class="title"><?= $title ?><?= $codeView ?></div>
             <div class="description">
                 <?= $description ?>
-                <hr style="margin: 30px 0!important;"/>
-                <div style="direction: <?= $direction ?>!important;text-align: <?= JK_DIRECTION_SIDE() ?>">
-                    <div style="margin-top:15px;"><span
-                                style="color: grey;"><?= __("website") ?>: </span><span
-                                style="direction: ltr"><?= JK_HOST() ?></span></div>
-                    <?php
-                    if (JK_APP_DEBUG()) {
+                <?php
+                if ($code != 200) {
+                    ?>
+                    <hr style="margin: 30px 0!important;"/>
+                    <div style="direction: <?= $direction ?>!important;text-align: <?= JK_DIRECTION_SIDE() ?>">
+                        <div style="margin-top:15px;"><span
+                                    style="color: grey;"><?= __("website") ?>: </span><span
+                                    style="direction: ltr"><?= JK_HOST() ?></span></div>
+                        <?php
+                        if (JK_APP_DEBUG()) {
+                            ?>
+                            <div style="margin-top:15px;"><span
+                                        style="color: grey;"><?= __("address") ?>: </span><span
+                                        style="direction: ltr"><?= JK_URI() ?></span></div>
+                            <?php
+                        }
                         ?>
                         <div style="margin-top:15px;"><span
-                                    style="color: grey;"><?= __("address") ?>: </span><span
-                                    style="direction: ltr"><?= JK_URI() ?></span></div>
-                        <?php
-                    }
-                    ?>
-                    <div style="margin-top:15px;"><span
-                                style="color: grey;"><?= __("datetime") ?>: </span><span
-                                style="direction: ltr"><?= \Joonika\Idate::date_int("Y/m/d-H:i:s") ?></span></div>
-                </div>
+                                    style="color: grey;"><?= __("datetime") ?>: </span><span
+                                    style="direction: ltr"><?= \Joonika\Idate::date_int("Y/m/d-H:i:s") ?></span></div>
+                    </div>
+                    <?php
+                }
+                ?>
             </div>
         </div>
     </div>
@@ -3067,7 +3077,7 @@ if (!function_exists('databaseInfo')) {
 if (!function_exists('boom')) {
     function boom($action, $data = null, $return = false)
     {
-        $boom=new \Joonika\boom\events($action, $data, $return);
+        $boom = new \Joonika\boom\events($action, $data, $return);
         return $boom;
     }
 }
