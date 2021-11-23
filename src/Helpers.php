@@ -2193,7 +2193,7 @@ if (!function_exists('pagination')) {
         }
         $html = '<div class="">
         <nav class="">
-            <ul class="pagination justify-content-center my-1">';
+            <ul class="pagination justify-content-center flex-wrap my-1">';
         if ($hasBtnBA) {
             $btnDis = '';
             if ($currentPage == 1) {
