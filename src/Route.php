@@ -1,7 +1,9 @@
 <?php
 
 namespace Joonika;
-session_start();
+session_start([
+    'read_and_close'  => true,
+]);
 
 use Joonika\Cookie\Cookie;
 use Joonika\Middlewares\kernel;
@@ -663,6 +665,7 @@ class Route
                                 self::$JK_USERID = self::$JK_LOGINID;
                                 self::$JK_TOKENID = $userToken['id'];
                                 self::$JK_TOKEN = $userToken['token'];
+                                @session_start();
                                 $_SESSION[self::$JK_DOMAIN_WOP]['token'] = $userToken['token'];
                                 $_SESSION[self::$JK_DOMAIN_WOP]['userID'] = $existUser['id'];
                             }
@@ -678,6 +681,7 @@ class Route
                             self::$JK_LOGINID = $_SESSION[self::$JK_DOMAIN_WOP]['userID'];
                             self::$JK_USERID = self::$JK_LOGINID;
                         } else {
+                            @session_start();
                             unset($_SESSION[self::$JK_DOMAIN_WOP]['token']);
                             unset($_SESSION[self::$JK_DOMAIN_WOP]['userID']);
                         }
@@ -697,6 +701,7 @@ class Route
                         self::$JK_LOGINID = $hastDupToken['userID'];
                         self::$JK_USERID = self::$JK_LOGINID;
                         self::$JK_TOKEN = $_COOKIE['loginCredential'];
+                        @session_start();
                         $_SESSION[self::$JK_DOMAIN_WOP]['token'] = $_COOKIE['loginCredential'];
                         $_SESSION[self::$JK_DOMAIN_WOP]['userID'] = $hastDupToken['userID'];
                     }

@@ -17,6 +17,7 @@ class CSRF
      */
     public function __construct()
     {
+        @session_start();
         $length = 32;
         self::$csrf_token = uniqid(rand(10000, 99999)) . substr(base_convert(sha1(uniqid(mt_rand())), 16, 36), 0, $length) . uniqid(rand(10000, 99999));
         $_SESSION['csrfToken'] = self::$csrf_token;
