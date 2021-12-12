@@ -513,7 +513,8 @@ class Route
                 }
             }
         } catch (\Exception $exception) {
-            echo "!!! please check your connection , connection to database failed !!!";
+            echo "!!! connection to db server failed !!! try again";
+            die;
         }
         if ($this->query_string != "") {
             parse_str($this->query_string, $exp);
