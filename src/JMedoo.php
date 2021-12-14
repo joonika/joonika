@@ -176,7 +176,7 @@ class JMedoo extends Medoo\Medoo
         array &$map,
         $join,
         &$columns = null,
-        array $where = null,
+        $where = null,
         $columnFn = null
     ): string
     {
