@@ -1235,5 +1235,164 @@ function showtab(id="") {
                                  title="' . $text . '"></i>';
     }
 
+    static function field_phone($options = [])
+    {
+        $return = '';
+        $option = [
+            "title" => '',
+            "value" => '',
+            "type" => 'text',
+            "labelClass" => '',
+            "inputClass" => '',
+            "onChange" => '',
+            "onkeyup" => '',
+            "class" => '',
+            "disabled" => false,
+            "form-group-class" => '',
+            "form-group" => true,
+            "label" => true,
+            "name" => '',
+            "id" => '',
+            "attr" => [
+                "data-msg" => __("this field is required")
+            ],
+            "addon" => '',
+            "addon-dir" => 'right',
+            "ColType" => '4,8',
+            "help" => '',
+            "placeholder" => '',
+            "required" => false,
+            "direction" => JK_DIRECTION(),
+            "repeatable" => false,
+        ];
+        if (sizeof($option) >= 1) {
+            foreach ($option as $key => $opt) {
+                if (isset($options[$key])) {
+                    $option[$key] = $options[$key];
+                }
+            }
+        }
+
+        if (!isset($options['title'])) {
+            $option['title'] = $option['name'];
+        }
+        $disabled = '';
+        if ($option['disabled']) {
+            $disabled = "disabled";
+        }
+        if (!isset($options['id'])) {
+            $option['id'] = $option['name'];
+        }
+        if (!isset($options['value'])) {
+            global $data;
+            if (isset($data[$option['name']])) {
+                $option['value'] = $data[$option['name']];
+            }
+        }
+        $atts = '';
+        if (sizeof($option['attr']) >= 1) {
+            foreach ($option['attr'] as $key => $v) {
+                $atts .= ' ' . $key . '="' . $v . '" ';
+            }
+        }
+
+        $value = $option['value'];
+
+        $optioncols = explode(',', $option['ColType']);
+        $requ = '';
+        if ($option['required'] == true) {
+            $option['title'] = "<span class='fieldIsRequiredParent'><span class='fieldIsRequired ml-1 mr-1 text-danger'>*</span><span class='ml-1 mr-1' >" . $option['title'] . "</span></span>";
+            $requ = 'required="required"';
+        }
+
+        if ($option['label']) {
+            $return .= '
+        <label for="' . $option['id'] . '" class="inp ' . $option['direction'] . ' ' . $optioncols[0] . ' ' . $option['labelClass'] . '">
+                ';
+        }
+
+
+        $onClick = "";
+        if ($option['onChange'] != "") {
+            $onClick = 'onChange="' . $option['onChange'] . '"';
+        }
+        $onkeyup = "";
+        if ($option['onkeyup'] != "") {
+            $onkeyup = 'onkeyup="' . $option['onkeyup'] . '"';
+        }
+
+        $return .= '<input type="' . $option['type'] . '" placeholder="' . $option['placeholder'] . '" class="' . $option['inputClass'] . ' ' . $option['direction'] . ' ' . $option['class'] . '" ' . $disabled . ' name="' . $option['name'] . '" placeholder="' . $option['placeholder'] . '"  id="' . $option['id'] . '" value="' . $value . '"  ' . $requ . ' ' . $atts . ' ' . $onClick . ' ' . $onkeyup . ' >';
+
+
+        $return .= '
+        <span class="label ">' . $option['title'] . '</span>
+  <span class="border"></span>
+                ';
+
+        if ($option['help'] != '') {
+            $return .= '
+        <span class="help-block ' . $option['direction'] . '">' . $option['help'] . '</span>
+        ';
+        }
+        if ($option['label']) {
+            $return .= '</label>';
+        }
+
+
+        if($option["repeatable"]){
+            $return .= '<input type="hidden" name="dial_code_'.$option["name"].'" id="dial_code_'.$option["name"].'" value="" />';
+            AstCtrl::ADD_FOOTER_SCRIPTS('
+                <script>
+                    function setTelTemplate(inputId){
+                        var input = document.querySelector("#"+inputId);
+                        window.intlTelInput(input, {
+                          initialCountry: "ir",
+                          autoHideDialCode:true,
+                          separateDialCode: true,
+                          formatOnDisplay:true,
+                          nationalMode: true,
+                          utilsScript: "/modules/users/assets/utils.js",
+                        });  
+                        
+                        $(input).on("change",function(){
+                            $("#dial_code_"+input.name).val($("label[for=\'"+ input.name +"\'] .iti .iti__selected-dial-code").text());
+                        });
+                        
+                        $("label[for=\'"+ input.name +"\'] .iti").on("click",function(){
+                            $("#dial_code_"+input.name).val($("label[for=\'"+ input.name +"\'] .iti .iti__selected-dial-code").text());
+                        });    
+                    }
+                    
+                </script>
+            ');
+        }else{
+            $return .= '<input type="hidden" name="dial_code" id="dial-code" value="" />';
+            AstCtrl::ADD_FOOTER_SCRIPTS('
+                <script>
+                    var input = document.querySelector("#'.$option["id"].'");
+                    window.intlTelInput(input, {
+                      initialCountry: "ir",
+                      autoHideDialCode:true,
+                      separateDialCode: true,
+                      formatOnDisplay:true,
+                      nationalMode: true,
+                      utilsScript: "/modules/users/assets/utils.js",
+                    });  
+                    
+                    $("#'.$option["id"].'").on("change",function(){
+                        $("#dial-code").val($(".iti__selected-dial-code").text());
+                    });
+                    
+                    $(".iti__flag-container").on("click",function(){
+                        $("#dial-code").val($(".iti__selected-dial-code").text());
+                    });
+                </script>
+            ');
+        }
+
+
+        return $return;
+    }
+
 
 }
