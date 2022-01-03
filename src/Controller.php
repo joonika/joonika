@@ -350,14 +350,21 @@ class Controller
     {
         $errors = is_array($errors) ? $errors : [$errors];
         $output = [];
-        if (!empty($errors)) {
-            foreach ($errors as $error) {
-                if (!isset($error['message'])) {
-                    $output[] = [
-                        "message" => $error
-                    ];
-                } else {
-                    $output[] = $error;
+        if (isset($errors['message'])) {
+            $output=[$errors];
+        } else {
+
+            if (!empty($errors)) {
+                foreach ($errors as $error) {
+                    if (!isset($error['message'])) {
+
+                        $output[] = [
+                            "message" => $error
+                        ];
+                    } else {
+
+                        $output[] = $error;
+                    }
                 }
             }
         }
