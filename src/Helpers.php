@@ -2963,7 +2963,13 @@ function arabicToPersianText($text)
     $name = preg_replace('!\s+!', ' ', $name);
     return $name;
 }
-
+function persianToArabicText($text)
+{
+    $name = str_replace('ی', 'ي', $text);
+    $name = str_replace('ک', 'ك', $name);
+    $name = preg_replace('!\s+!', ' ', $name);
+    return $name;
+}
 if (!function_exists('requests')) {
     function requests($key = null, $val = null)
     {
