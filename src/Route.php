@@ -513,11 +513,12 @@ class Route
                 }
             }
         } catch (\Exception $exception) {
-            $messasge = __("connecting to database server not available now");
-            $exceptionMessage = strtok($exception->getMessage(), ':');
+            $exceptionMessage = __("server not available now");
+            $messasge = $exception->getMessage();
             if (JK_SERVER_TYPE == "main") {
-                $exceptionMessage = __("please wait for a moment");
-                $messasge = __("server not available now");
+                $messasge = __("please wait for a moment");
+            }else{
+                $messasge="<pre style='text-align: left'>$messasge</pre>";
             }
             templateRenderSimpleAlert(500, $exceptionMessage, $messasge);
             die;
