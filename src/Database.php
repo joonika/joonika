@@ -105,7 +105,7 @@ class Database
         if (!isset(self::$instance[$dbName])) {
             new Database($db);
         }
-        return self::$instance[$dbName];
+        return !empty(self::$instance[$dbName])?self::$instance[$dbName]:false;
     }
 
     private static function getInstance($str = null, $type = 'db')

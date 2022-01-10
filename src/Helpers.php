@@ -827,6 +827,9 @@ if (empty($isAjax)) {
                         <div style="margin-top:15px;"><span
                                     style="color: grey;"><?= __("datetime") ?>: </span><span
                                     style="direction: ltr"><?= \Joonika\Idate::date_int("Y/m/d-H:i:s") ?></span></div>
+                        <div style="margin-top:15px;"><span
+                                    style="color: grey;"><?= __("ip") ?>: </span><span
+                                    style="direction: ltr"><?= requestIp() ?></span></div>
                     </div>
                     <?php
                 }
@@ -1012,14 +1015,14 @@ function ajax_load($options = [])
             msg = "uncaught Error.\n" + jqXHR.responseText;
         }
         ' . $error_response . '
-        
+
 }
     });
     ';
     if ($option['nonEmpty'] && $option['on'] == 'change') {
         $return .= '
        }else{
-        $("' . $option['success_response'] . '").html("");      
+        $("' . $option['success_response'] . '").html("");
        }
        ';
     }
@@ -1507,7 +1510,7 @@ function datatable_structure($options = [])
     }
 
     $return = '
-    
+
     var table=$(\'#' . $opt['id'] . '\').DataTable( {
         ' . $columnDefs . '
         ' . $typetext . '
@@ -1527,9 +1530,9 @@ $(\'[data-popup="tooltip"]\').tooltip();
 ' . $opt['drawCallback'] . '
 },
    } );
-    
-    
-    
+
+
+
     ';
 
     return $return;
@@ -3213,5 +3216,21 @@ if (!function_exists('jk_temp_set')) {
         } else {
             $database->insert('jk_temp', $columns);
         }
+    }
+}
+if (!function_exists('requestIp')) {
+    function requestIp()
+    {
+        $ip = '';
+        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+            $ip = $_SERVER['HTTP_CLIENT_IP'];
+        } //whether ip is from the proxy
+        elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        } //whether ip is from the remote address
+        elseif (isset($_SERVER['REMOTE_ADDR'])) {
+            $ip = $_SERVER['REMOTE_ADDR'];
+        }
+        return $ip;
     }
 }
