@@ -90,7 +90,11 @@ class Database
             self::$instanceDuration[$info['db']]=[];
         } catch (\PDOException $exception) {
             self::$instance[$info['db']] = false;
-            throw new \PDOException($exception);
+            $info['pass']=!empty($info['pass'])?"{{#MASK}}":'';
+            $options=128;
+            $dsnInfo=json_encode($info,$options);
+            $message=$exception->getMessage().' => '."\n".$dsnInfo;
+            throw new \Exception($message,$exception->getCode(),$exception);
         }
     }
 
