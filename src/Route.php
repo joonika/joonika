@@ -364,7 +364,7 @@ class Route
     public function __construct($sitePath, $silentType = false)
     {
         self::$instance = $this;
-        $sitePath=str_replace('/','\\',$sitePath);
+        $sitePath=str_replace('/',DIRECTORY_SEPARATOR,$sitePath);
         $languageSchema = self::routerConfigLanguageSchema();
         $otherSchema = self::routerConfigOtherDbSchema();
         $routeConfig = self::routerConfigStructure($sitePath);
