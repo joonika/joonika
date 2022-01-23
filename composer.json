@@ -25,7 +25,7 @@
     "whichbrowser/parser": "2.1.1",
     "ezyang/htmlpurifier": "*",
     "fzaninotto/faker": "*",
-    "phpfastcache/phpfastcache": "^9.0.1",
+    "phpfastcache/phpfastcache": "^8.1.0",
     "nesbot/carbon": "^2.42.0",
     "ext-json": "*",
     "symfony/console": "*",
