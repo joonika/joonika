@@ -387,13 +387,7 @@ class Route
         }
         if (file_exists($requiredYamlFile)) {
             try {
-                $yamlParseFileCache = \Joonika\helper\Cache::get($checkName);
-                if (!empty($yamlParseFileCache)) {
-                    $yamlParseFile = $yamlParseFileCache;
-                } else {
-                    $yamlParseFile = yaml_parse_file($requiredYamlFile);
-                    \Joonika\helper\Cache::set($checkName, $yamlParseFile, 30);
-                }
+                $yamlParseFile = yaml_parse_file($requiredYamlFile);
                 if (!empty($yamlParseFile['env'])) {
                     self::$env = $yamlParseFile['env'];
                 }

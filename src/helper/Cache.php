@@ -8,7 +8,9 @@ use Config\SiteConfigs;
 use Joonika\Database;
 use Phpfastcache\CacheManager;
 use Phpfastcache\Config\Config;
+use Phpfastcache\Config\ConfigurationOption;
 use Phpfastcache\Core\phpFastCache;
+use Phpfastcache\Drivers\Redis\Driver;
 
 class Cache
 {
@@ -18,17 +20,26 @@ class Cache
     private function __construct()
     {
 
-        $JK_CACHE_SETTING = !empty(JK_WEBSITE()['cacheSetting']) ? JK_WEBSITE()['cacheSetting'] : [
-            "path"=>JK_SITE_PATH().'storage/private/',
-            "driver"=>'Files',
-        ];
-        $JK_CACHE_SETTING['path']=!empty($JK_CACHE_SETTING['path'])?$JK_CACHE_SETTING['path']:(JK_SITE_PATH().'storage/private/');
-        $JK_CACHE_SETTING['driver']=!empty($JK_CACHE_SETTING['driver'])?$JK_CACHE_SETTING['driver']:'Files';
-        CacheManager::setDefaultConfig(new Config([
-            "path" => $JK_CACHE_SETTING['path'],
-            "itemDetailedDate" => false
-        ]));
-        static::$instance = CacheManager::getInstance($JK_CACHE_SETTING['driver']);
+        if(empty(JK_WEBSITE()['cacheSetting'])){
+            $JK_CACHE_SETTING['path']=JK_SITE_PATH().'storage/private/';
+            $JK_CACHE_SETTING['driver']='Files';
+        }else{
+            $JK_CACHE_SETTING=JK_WEBSITE()['cacheSetting'];
+        }
+        $driver=$JK_CACHE_SETTING['driver'];
+        unset($JK_CACHE_SETTING['driver']);
+
+        if($driver=="Files"){
+            $JK_CACHE_SETTING['itemDetailedDate']=!empty($JK_CACHE_SETTING['itemDetailedDate'])?$JK_CACHE_SETTING['itemDetailedDate']:false;
+            $config= new \Phpfastcache\Drivers\Files\Config();
+            $config->setItemDetailedDate($JK_CACHE_SETTING['itemDetailedDate']);
+            $config->setPath($JK_CACHE_SETTING['path']);
+        }elseif($driver=="redis"){
+            $config = new \Phpfastcache\Drivers\Redis\Config();
+            $config->setHost($JK_CACHE_SETTING['host']);
+            $config->setPort($JK_CACHE_SETTING['port']);
+        }
+        static::$instance = CacheManager::getInstance($driver,$config);
     }
 
     private static function start()
