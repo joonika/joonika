@@ -500,7 +500,7 @@ class FS
         }
     }
 
-    private static function deleteDir($dir) {
+    private static function deleteDir($dir,$selfRemove=true) {
 
         foreach(glob($dir . '/' . '*') as $file) {
             if(is_dir($file)){
@@ -513,12 +513,14 @@ class FS
             }
         }
         self::emptyDir($dir);
-        @rmdir($dir);
+        if($selfRemove){
+            @rmdir($dir);
+        }
     }
 
     public static function removeDirectories($dirPath, $selfRemove = true)
     {
-        self::deleteDir($dirPath);
+        self::deleteDir($dirPath,$selfRemove);
     }
 
     public static function filesList($dir, $ext = 'php')

@@ -457,18 +457,30 @@ class app extends baseCommand
 
     public function update()
     {
-        $this->bootClass();
 //        self::saveRoutes();
 //        Route::$instance = new Route(JK_SITE_PATH(), 'dev');
 
         $this->io->title("The public folder is updating ...");
         $publicFileExist = FS::isExist(JK_SITE_PATH() . "public");
         if ($publicFileExist) {
-            FS::removeDirectories(JK_SITE_PATH() . "public", true);
+            FS::copy(__dir__ . "/temp/maintenance.php",JK_SITE_PATH() . "public" . DS() . "index.php");
+            if (!FS::isExistIsFile(JK_SITE_PATH() . "public/.htaccess")) {
+                FS::copy(__dir__ . "/temp/.htaccess",JK_SITE_PATH() . "public" . DS() . ".htaccess");
+            }
+            FS::removeDirectories(JK_SITE_PATH() . "public".DS().'assets', true);
+            FS::removeDirectories(JK_SITE_PATH() . "public".DS().'modules', true);
+            FS::removeDirectories(JK_SITE_PATH() . "public".DS().'themes', true);
+        }else{
+            FS::mkDir(JK_SITE_PATH() . "public", 0777, true);
+            FS::copy(__dir__ . "/temp/maintenance.php",JK_SITE_PATH() . "public" . DS() . "index.php");
+            if (!FS::isExistIsFile(JK_SITE_PATH() . "public/.htaccess")) {
+                FS::copy(__dir__ . "/temp/.htaccess",JK_SITE_PATH() . "public" . DS() . ".htaccess");
+            }
         }
 
-        FS::mkDir(JK_SITE_PATH() . "public", 0777, true);
 
+
+        $this->bootClass();
 
         $modules = FS::getDirectories(JK_SITE_PATH() . 'modules');
         $themes = FS::getDirectories(JK_SITE_PATH() . 'themes');
@@ -517,23 +529,8 @@ class app extends baseCommand
                 }
             }
         }
-        $this->writeSuccess("\tresult : success" . "\n");
-
-
-        $this->writeInfo("5- Create index.php ..." . "\n");
-        if (!FS::isExistIsFile(JK_SITE_PATH() . "public/index.php")) {
-            $content = "<?php\nrequire __DIR__ . '/../index.php';\n";
-            FS::filePutContent(JK_SITE_PATH() . "public" . DS() . "index.php", $content);
-        }
-        $this->writeSuccess("\tresult : success" . "\n");
-
-        $this->writeInfo("6- Create htaccess  ..." . "\n");
-        if (!FS::isExistIsFile(JK_SITE_PATH() . "public/.htaccess")) {
-            FS::filePutContent(JK_SITE_PATH() . "public" . DS() . ".htaccess", FS::fileGetContent(__dir__ . "/temp/.htaccess"));
-        }
-        $this->writeSuccess("\tresult : success" . "\n");
-
-
+        FS::copy(__dir__ . "/temp/index.php",JK_SITE_PATH() . "public" . DS() . "index.php");
+        FS::copy(__dir__ . "/temp/joonika",JK_SITE_PATH() . "public" . DS() . "joonika");
         $this->writeSuccess("\n===============================================");
         $this->writeSuccess("\n" . "Public directory is updated");
         $this->writeSuccess("\n===============================================");
