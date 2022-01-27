@@ -20,26 +20,26 @@ class Cache
     private function __construct()
     {
 
-        if(empty(JK_WEBSITE()['cacheSetting'])){
-            $JK_CACHE_SETTING['path']=JK_SITE_PATH().'storage/private/';
-            $JK_CACHE_SETTING['driver']='Files';
-        }else{
-            $JK_CACHE_SETTING=JK_WEBSITE()['cacheSetting'];
+        if (empty(JK_WEBSITE()['cacheSetting'])) {
+            $JK_CACHE_SETTING['path'] = JK_SITE_PATH() . 'storage/private/';
+            $JK_CACHE_SETTING['driver'] = 'Files';
+        } else {
+            $JK_CACHE_SETTING = JK_WEBSITE()['cacheSetting'];
         }
-        $driver=$JK_CACHE_SETTING['driver'];
+        $driver = $JK_CACHE_SETTING['driver'];
         unset($JK_CACHE_SETTING['driver']);
 
-        if($driver=="Files"){
-            $JK_CACHE_SETTING['itemDetailedDate']=!empty($JK_CACHE_SETTING['itemDetailedDate'])?$JK_CACHE_SETTING['itemDetailedDate']:false;
-            $config= new \Phpfastcache\Drivers\Files\Config();
+        if ($driver == "Files") {
+            $JK_CACHE_SETTING['itemDetailedDate'] = !empty($JK_CACHE_SETTING['itemDetailedDate']) ? $JK_CACHE_SETTING['itemDetailedDate'] : false;
+            $config = new \Phpfastcache\Drivers\Files\Config();
             $config->setItemDetailedDate($JK_CACHE_SETTING['itemDetailedDate']);
             $config->setPath($JK_CACHE_SETTING['path']);
-        }elseif($driver=="redis"){
+        } elseif ($driver == "redis") {
             $config = new \Phpfastcache\Drivers\Redis\Config();
             $config->setHost($JK_CACHE_SETTING['host']);
             $config->setPort($JK_CACHE_SETTING['port']);
         }
-        static::$instance = CacheManager::getInstance($driver,$config);
+        static::$instance = CacheManager::getInstance($driver, $config);
     }
 
     private static function start()
@@ -59,17 +59,24 @@ class Cache
 
     public static function set($key, $value, $time = 60)
     {
-        $CachedString = static::init($key);
-        if (is_null($CachedString->get())) {
-            $CachedString->set($value)->expiresAfter($time);
-            static::$instance->save($CachedString);
+        try {
+            $CachedString = static::init($key);
+            if (is_null($CachedString->get())) {
+                $CachedString->set($value)->expiresAfter($time);
+                static::$instance->save($CachedString);
+            }
+        } catch (\Exception $exception) {
         }
     }
 
     public static function get($key)
     {
-        $CachedString = static::init($key);
-        return $CachedString->get($key);
+        try {
+            $CachedString = static::init($key);
+            return $CachedString->get($key);
+        } catch (\Exception $exception) {
+            return false;
+        }
     }
 
     public static function getItemsAsJsonString(array $keys)
